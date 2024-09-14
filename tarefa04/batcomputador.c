@@ -93,7 +93,8 @@ void bat_free(int endereco, p_vector v){
             v->dados = p_aux;
             v->alocado = novo_tamanho;
         }
-
+    }
+    
     // Exibir o estado atual do vetor
     printf("Esse daqui é nosso vetor:");
     for (int x = 0; x < v->utilizados; x++) {
@@ -101,15 +102,18 @@ void bat_free(int endereco, p_vector v){
     }
     printf("\n");
 
+    
+}
+
+void bat_print(int endereco, p_vector v){
+    for (int i = 0; i < v->utilizados - endereco; i++){
+        printf("%d ", v->dados[endereco + i]);
     }
 }
 
-void bat_print(int endereco, p_vector v)[
-    for (int i = 0; i < v_print->utilizados; i++){
-    printf("%d ", v_print->dados[i]);
-    }
-    printf("\n");
-]
+void bat_uso(p_vector v){
+    printf("%d de %d", v->utilizados, v->alocado);
+}
 
 int main(){
     int n; //Número de operações a serem realizadas
@@ -152,7 +156,7 @@ int main(){
         }
 
         else if (strcmp(command,"bat-uso") == 0){
-
+            bat_uso(v);
         }
 
     }
