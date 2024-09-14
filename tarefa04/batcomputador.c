@@ -75,41 +75,41 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
 }   
 
 void bat_free(int endereco, p_vector v){
-
-    for (int i = 0; i < (v->alocado-1 - endereco); i++){
-        v->dados[endereco + i] = -1;
+    if (endereco >= 0 && endereco <= v->utilizados) {
+        v->utilizados = endereco;
     }
 
-     printf("Esse daqui é nosso vetor:");
-        for (int x = 0; x<v->utilizados; x++){
-            printf("%d ",v->dados[x]);
-        }
-        printf("\n");
+    //Verificar a necessidade de diminuir o tamanho do vetor
+    if (v->utilizados <= v->alocado / 4) {
+        int novo_tamanho = v->alocado / 2;
 
-    v->utilizados = endereco;
-
-    //Verificar necessidade de reduzir o vetor
-    if (v->utilizados <= (v->alocado/4)){
-        
-        int * p_aux = v->dados;
-        
-        if (v->alocado/2 <= MIN_VETOR){
-            v->dados = malloc((2*MIN_VETOR)*sizeof(int));
-            v->alocado = 2*MIN_VETOR;
-        }
-        else {
-            v->dados = malloc((v->alocado/2)*sizeof(int));      
-            v->alocado = v->alocado/2;
+        if (novo_tamanho < MIN_VETOR){
+            novo_tamanho = 2*MIN_VETOR;
         }
 
-        for (int i = 0; i<v->utilizados; i++){
-            v->dados[i] = p_aux[i];
-        }  
-        free(p_aux);
+        int * p_aux = realloc(v->dados, novo_tamanho*sizeof(int));
+
+        if (p_aux != NULL){
+            v->dados = p_aux;
+            v->alocado = novo_tamanho;
+        }
+
+    // Exibir o estado atual do vetor
+    printf("Esse daqui é nosso vetor:");
+    for (int x = 0; x < v->utilizados; x++) {
+        printf("%d ", v->dados[x]);
+    }
+    printf("\n");
 
     }
-
 }
+
+void bat_print(int endereco, p_vector v)[
+    for (int i = 0; i < v_print->utilizados; i++){
+    printf("%d ", v_print->dados[i]);
+    }
+    printf("\n");
+]
 
 int main(){
     int n; //Número de operações a serem realizadas
@@ -145,13 +145,10 @@ int main(){
         }
 
         else if (strcmp(command,"bat-print") == 0){
-            p_vector v_print; //Endereço de memória que se quer imprimir
-            scanf("%p", &v_print);
+            int endereco; //Endereço de memória que se quer imprimir
+            scanf("%d", &endereco);
 
-            for (int i = 0; i < v_print->utilizados; i++){
-                printf("%d ", v_print->dados[i]);
-            }
-            printf("\n");
+            bat_print(endereco, v);
         }
 
         else if (strcmp(command,"bat-uso") == 0){
@@ -160,9 +157,7 @@ int main(){
 
     }
 
-    // Liberando a memória no final
-    free(v->dados);
-    free(v);
+    
 
     //Imprimindo o vetor
     printf("Esse daqui é nosso vetor:");
@@ -173,6 +168,10 @@ int main(){
 
     printf("%d\n", v->utilizados);
     printf("%d\n", v->alocado);
+
+    // Liberando a memória no final
+    free(v->dados);
+    free(v);
 
     return 0;
 }
