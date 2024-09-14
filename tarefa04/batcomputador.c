@@ -23,7 +23,7 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
         }
 
         else {
-            v->dados = malloc(MIN_VETOR*sizeof(int));
+            v->dados = malloc(2*MIN_VETOR*sizeof(int));
             v->alocado = MIN_VETOR;
             v->utilizados = 0;
         }
@@ -33,7 +33,7 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
             v->utilizados++;
         }
 
-        printf("%p", &v->dados[0]);
+        printf("%p\n", &v->dados[0]);
         return;
     }
 
@@ -41,12 +41,14 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
     if (N < (v->alocado - v->utilizados)){
         for (int i = 0; i<N; i++){
             scanf("%d", &v->dados[v->utilizados + i]);
-           v->utilizados++;
         }
-        printf("%p", &v->dados[0]);
+        v->utilizados = v->utilizados + N;
+
+        printf("%p\n", &v->dados[0]);
         return;
     }
 
+    //Expandir a memória
     else {
         int * p_aux;
         p_aux = v->dados;
@@ -60,26 +62,56 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
 
         for (int i = 0; i<N; i++){
             scanf("%d", &v->dados[v->utilizados+i]);
-            v->utilizados++;
         }
 
-        N = N + v->utilizados;
-        v->alocado = 2*N;
-        v->utilizados = N;    
-        printf("%p", &v->dados[0]);
+
+        v->alocado = 2*(N + v->utilizados);
+        v->utilizados = N + v->utilizados;  
+
+        printf("%p\n", &v->dados[0]);
         return;    
     }
 
 }   
 
-int main(){
+void bat_free(int endereco, p_vector v){
 
+    for (int i = 0; i < (v->alocado-1 - endereco); i++){
+        v->dados[endereco + i] = -1;
+    }
+
+    v->utilizados = endereco;
+
+    //Verificar necessidade de reduzir o vetor
+    if (v->utilizados <= (v->alocado/4)){
+        
+        int * p_aux = v->dados;
+        
+        if (v->alocado/2 <= MIN_VETOR){
+            v->dados = malloc((2*MIN_VETOR)*sizeof(int));
+            v->alocado = 2*MIN_VETOR;
+        }
+        else {
+            v->dados = malloc((v->alocado/2)*sizeof(int));      
+            v->alocado = v->alocado/2;
+        }
+
+        for (int i = 0; i<v->utilizados; i++){
+            v->dados[i] = p_aux[i];
+        }  
+        free(p_aux);
+
+    }
+
+}
+
+int main(){
     int n; //Número de operações a serem realizadas
     scanf("%d", &n);
 
     //Declarando e alocando a bat-memória
-    p_vector v;
-    v = malloc(sizeof(Vector));
+    p_vector v = malloc(sizeof(Vector));
+    v->dados = NULL;
     
     char command[10];
     for (int x = 0; x<n; x++){
@@ -89,23 +121,31 @@ int main(){
             int N; //Qtde de números alocados
             scanf("%d", &N);
             bat_alloc(N, v);
+
+        printf("Esse daqui é nosso vetor:");
+        for (int x = 0; x<v->utilizados; x++){
+            printf("%d ",v->dados[x]);
+        }
+        printf("\n");
+
         }
 
         else if (strcmp(command,"bat-free") == 0){
-            p_vector v; //Endereço de memória que se quer liberar
-            scanf("%p", &v);
+            int endereco; //Endereço de memória que se quer liberar
+            scanf("%p", &endereco);
 
-            free(v->dados);
-            free(v);
+            bat_free(endereco,v);
+            
         }
 
         else if (strcmp(command,"bat-print") == 0){
-            p_vector v; //Endereço de memória que se quer imprimir
-            scanf("%p", &v);
+            p_vector v_print; //Endereço de memória que se quer imprimir
+            scanf("%p", &v_print);
 
-            for (int i = 0; i < v->utilizados; i++){
-                printf("%d ", v->dados[i]);
+            for (int i = 0; i < v_print->utilizados; i++){
+                printf("%d ", v_print->dados[i]);
             }
+            printf("\n");
         }
 
         else if (strcmp(command,"bat-uso") == 0){
@@ -113,6 +153,20 @@ int main(){
         }
 
     }
+
+    // Liberando a memória no final
+    free(v->dados);
+    free(v);
+
+    //Imprimindo o vetor
+    printf("Esse daqui é nosso vetor:");
+    for (int x = 0; x<v->utilizados; x++){
+        printf("%d ",v->dados[x]);
+    }
+    printf("\n");
+
+    printf("%d\n", v->utilizados);
+    printf("%d\n", v->alocado);
 
     return 0;
 }
