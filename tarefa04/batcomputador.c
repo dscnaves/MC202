@@ -33,9 +33,11 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
             v->utilizados++;
         }
 
-        printf("%p\n", &v->dados[0]);
+        printf("0\n");
         return;
     }
+
+    int utilizados_anterior = v->utilizados;
 
     //Verificar se há espaço o suficiente para alocar os novos elementos
     if (N < (v->alocado - v->utilizados)){
@@ -44,7 +46,7 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
         }
         v->utilizados = v->utilizados + N;
 
-        printf("%p\n", &v->dados[0]);
+        printf("%d\n", utilizados_anterior+1);
         return;
     }
 
@@ -68,7 +70,7 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
         v->alocado = 2*(N + v->utilizados);
         v->utilizados = N + v->utilizados;  
 
-        printf("%p\n", &v->dados[0]);
+        printf("%d\n", utilizados_anterior+1);
         return;    
     }
 
@@ -106,8 +108,8 @@ void bat_free(int endereco, p_vector v){
 }
 
 void bat_print(int endereco, p_vector v){
-    for (int i = 0; i < v->utilizados - endereco; i++){
-        printf("%d ", v->dados[endereco + i]);
+    for (int i = 0; i < v->utilizados - endereco +1; i++){
+        printf("%d ", v->dados[endereco -1 + i]);
     }
 }
 
