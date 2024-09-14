@@ -80,6 +80,12 @@ void bat_free(int endereco, p_vector v){
         v->dados[endereco + i] = -1;
     }
 
+     printf("Esse daqui é nosso vetor:");
+        for (int x = 0; x<v->utilizados; x++){
+            printf("%d ",v->dados[x]);
+        }
+        printf("\n");
+
     v->utilizados = endereco;
 
     //Verificar necessidade de reduzir o vetor
@@ -132,7 +138,7 @@ int main(){
 
         else if (strcmp(command,"bat-free") == 0){
             int endereco; //Endereço de memória que se quer liberar
-            scanf("%p", &endereco);
+            scanf("%d", &endereco);
 
             bat_free(endereco,v);
             
