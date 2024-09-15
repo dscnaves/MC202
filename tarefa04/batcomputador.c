@@ -24,7 +24,7 @@ void bat_alloc(int N, p_vector v){ //N é o tamanho do vetor
 
         else {
             v->dados = malloc(2*MIN_VETOR*sizeof(int));
-            v->alocado = MIN_VETOR;
+            v->alocado = 2*MIN_VETOR;
             v->utilizados = 0;
         }
 
