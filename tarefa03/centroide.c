@@ -14,13 +14,13 @@ typedef struct {
     Vector *vetores; // Array dinâmico de vetores
 } Matrix;
 
-Matrix *create_matrix(int n, int d) {
+Matrix * create_matrix(int n, int d){
     Matrix *m = (Matrix*) malloc(sizeof(Matrix));
     if (m == NULL){
         printf("Erro de alocação de memória da matriz!\n");
         exit(1);
     }
-
+    
     m->n = n;
     m->d = d;
     m->vetores = (Vector*) malloc(n * sizeof(Vector)); 
@@ -39,8 +39,8 @@ Matrix *create_matrix(int n, int d) {
     return m;
 }
 
-void free_matrix(Matrix *m) {
-    for (int i = 0; i < m->n; i++) {
+void free_matrix(Matrix * m){
+    for (int i = 0; i< m->n; i++){
         free(m->vetores[i].original_vector);
         free(m->vetores[i].max_min_normal_vector);
         free(m->vetores[i].euclides_normal_vector);
@@ -49,49 +49,34 @@ void free_matrix(Matrix *m) {
     free(m);
 }
 
-float modulus(Vector *v, int d) {
+float modulus(Vector * v, int d){
     float soma_quadrados = 0;
-    for (int i = 0; i < d; i++) {
+    for (int i = 0; i < d; i++){
         soma_quadrados += pow(v->original_vector[i], 2);
     }
     return sqrt(soma_quadrados);
 }
 
-void max_min_normalize(Matrix *m, int d, int n) {
-    float *x_min = (float*) malloc(d * sizeof(float));
-    float *x_max = (float*) malloc(d * sizeof(float));
+void max_min_normalize(Matrix * m, int idx, int d){
+    float x_min = m->vetores[idx].original_vector[0];
+    float x_max = m->vetores[idx].original_vector[0];
 
-    // Inicializa x_min e x_max com os valores da primeira linha
+    for (int j = 1; j < d; j++){
+        if (x_min > m->vetores[idx].original_vector[j]){
+            x_min = m->vetores[idx].original_vector[j];
+        }
+        if (x_max < m->vetores[idx].original_vector[j]){
+            x_max = m->vetores[idx].original_vector[j];
+        }
+    }
+
     for (int j = 0; j < d; j++) {
-        x_min[j] = m->vetores[0].original_vector[j];
-        x_max[j] = m->vetores[0].original_vector[j];
-    }
-
-    // Calcula o mínimo e o máximo para cada dimensão
-    for (int i = 1; i < n; i++) {
-        for (int j = 0; j < d; j++) {
-            if (m->vetores[i].original_vector[j] < x_min[j]) {
-                x_min[j] = m->vetores[i].original_vector[j];
-            }
-            if (m->vetores[i].original_vector[j] > x_max[j]) {
-                x_max[j] = m->vetores[i].original_vector[j];
-            }
+        if (x_max != x_min) {
+            m->vetores[idx].max_min_normal_vector[j] = 2 * ((m->vetores[idx].original_vector[j] - x_min) / (x_max - x_min)) - 1;
+        } else {
+            m->vetores[idx].max_min_normal_vector[j] = 0;
         }
     }
-
-    // Aplica a normalização Min-Max em cada vetor
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < d; j++) {
-            if (x_max[j] != x_min[j]) {
-                m->vetores[i].max_min_normal_vector[j] = 2 * ((m->vetores[i].original_vector[j] - x_min[j]) / (x_max[j] - x_min[j])) - 1;
-            } else {
-                m->vetores[i].max_min_normal_vector[j] = 0; // Se todos os valores forem iguais
-            }
-        }
-    }
-
-    free(x_min);
-    free(x_max);
 }
 
 void euclidean_normalize(Matrix *m, int idx, int d) {
@@ -112,7 +97,7 @@ void calculate_centroid_none(Matrix *m, int d, int n) {
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].original_vector[j];
         }
-        printf("%.3f ", soma / n);
+        printf("%.3f ", soma / n); // Ajusta para 3 casas decimais
     }
     printf("\n");
 }
@@ -124,7 +109,7 @@ void calculate_centroid_max_min(Matrix *m, int d, int n) {
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].max_min_normal_vector[j];
         }
-        printf("%.3f ", soma / n);
+        printf("%.3f ", soma / n); // Ajusta para 3 casas decimais
     }
     printf("\n");
 }
@@ -136,15 +121,15 @@ void calculate_centroid_euclidean(Matrix *m, int d, int n) {
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].euclides_normal_vector[j];
         }
-        printf("%.3f ", soma / n);
+        printf("%.3f ", soma / n); // Ajusta para 3 casas decimais
     }
     printf("\n");
 }
 
-int main() {
+int main(){
     int d, n;
-    Matrix *m;
-
+    Matrix * m;
+ 
     scanf("%d %d", &d, &n);
     m = create_matrix(n, d);
 
@@ -159,7 +144,9 @@ int main() {
     calculate_centroid_none(m, d, n);
 
     // Normalizando os vetores com Min-Max
-    max_min_normalize(m, d, n);
+    for (int k = 0; k < n; k++) {
+        max_min_normalize(m, k, d);
+    }
     calculate_centroid_max_min(m, d, n);
 
     // Normalizando os vetores pela norma Euclidiana
