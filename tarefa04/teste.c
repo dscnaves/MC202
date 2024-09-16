@@ -105,7 +105,7 @@ void bat_free(int endereco, p_vector v) {
 
     // Verifica se pode reduzir o tamanho da memória
     int nao_utilizados_final = v->alocado - v->utilizados;
-    if (v->alocado > MIN_VETOR && nao_utilizados_final > 3 * v->alocado / 4) {
+    if (v->alocado > MIN_VETOR && nao_utilizados_final >= 3 * v->alocado / 4) {
         int *p_aux = v->dados;
         int novo_tamanho = v->alocado / 2;
 
