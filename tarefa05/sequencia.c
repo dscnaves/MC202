@@ -7,7 +7,7 @@ typedef struct Node{
     struct Node *prox;
 } Node;
 
-Node* create_new_nodo(char base){
+Node* create_new_node(char base){
     Node * p_novo_no = (Node*)malloc(sizeof(Node)); //Alocar o ponteiro para o novo nó
     p_novo_no->base = base;
     p_novo_no->prox = NULL; //No início ele aponta para nulo
@@ -15,16 +15,16 @@ Node* create_new_nodo(char base){
 }
 
 
-void inserir(Node* p_DNA, Node * p_novo_no, int pos){
+void inserir(Node** p_DNA, Node * p_novo_no, int pos){
     //Inserir no início da  lista
     if (pos == 0){
-        p_novo_no->prox = p_DNA;
-        p_DNA = p_novo_no;
+        p_novo_no->prox = *p_DNA;
+        *p_DNA = p_novo_no;
     }
     else {
-        Node * p_atual = p_DNA; //Ponteiro auxiliar usado para percorrer a lista ligada
+        Node * p_atual = *p_DNA; //Ponteiro auxiliar usado para percorrer a lista ligada
         //Iteração percorerá desde o primeiro nó até a posição  anterior a correta para inserir o novo nó
-        for (int i = 0; i<pos - 1 && p_atual != NULL; i++){
+        for (int i = 0; i < pos - 1 && p_atual != NULL; i++){
             p_atual = p_atual->prox;
         }
         //Não se pode inserir um nó
@@ -33,47 +33,89 @@ void inserir(Node* p_DNA, Node * p_novo_no, int pos){
             p_atual->prox = p_novo_no;
         }        
     }
-    prinft("%c removido de %d", p_novo_no->base, pos);
+    printf("%c inserido de %d\n", p_novo_no->base, pos);
 
+}
+
+void remover(Node** pp_DNA, int pos){
+    Node * p_atual = *pp_DNA; //Para modificar o p_DNA, preciso guardar o endereço de memória dele
+    Node * p_no_removido = NULL;
+    //Remover no início da lista
+    if (pos == 0){
+        *pp_DNA = p_atual->prox;
+        printf("%c removido de %d\n", p_atual->prox->base, pos);
+    }
+
+    else{
+        for (int i = 0; i < pos - 1 && p_atual != NULL; i++){
+            p_atual = p_atual->prox;
+        }
+        p_no_removido = p_atual->prox;
+
+        if (p_atual != NULL){
+            //Remover nó da lista
+            p_atual->prox = p_atual->prox->prox;
+
+            printf("%c removido de %d\n", p_atual->prox->base, pos);
+
+            //Liberando espaço do nó removido
+            free(p_no_removido);
+        }
+    }
+}
+
+void imprimir(Node * p_DNA){
+    Node * atual = p_DNA;
+    printf("sequencia ");
+    while (atual != NULL){
+        printf("%c",atual->base);
+        atual = atual->prox;
+    }
+    printf("\n");
 }
 
 int main(){
     char command[20];
-    scanf("%s", &command);
+    Node* p_DNA = NULL; //Ponteiro que apontará para o início da lista encadeado (DNA)
 
-    Node* p_DNA; //Ponteiro que apontará para o início da lista encadeado (DNA)
+    while(1){
+        scanf("%s", &command[0]);
 
-    if (strcmp(command,"inserir") == 1){
-        char base;
-        int pos; //Posição que será inserido
-        scanf("%c %d",&base,&pos);
+        if (strcmp(command,"inserir") == 0){
+            char base;
+            int pos; //Posição que será inserido
+            scanf(" %c %d",&base,&pos);
+            
+            //Criar um novo nó e alocando-o
+            Node * p_novo_no = create_new_node(base);
 
-        //Criar um novo nó e alocando-o
-        Node * novo_no = create_new_nodo(base);
+            //Inserir novo nó no espaço desejado
+            inserir(&p_DNA,p_novo_no,pos);
 
-        //Inserir novo nó no espaço desejado
+        }
+        else if (strcmp(command,"remover") == 0){
+            int pos; //posição a ser removido
+            scanf("%d", &pos);
 
+            remover(&p_DNA, pos);
+        }
+        else if (strcmp(command,"inverter-prefixo") == 0){
+            /* code */
+        }
+        else if (strcmp(command,"inverter-sufixo") == 0){
+            /* code */
+        }
+        else if (strcmp(command,"transpor") == 0){
+            /* code */
+        }
+        else if (strcmp(command,"imprimir") == 0){
+            imprimir(p_DNA);
+        }
+        else if (strcmp(command,"sair") == 0){
+            break;
+        }
+            
     }
-    else if (strcmp(command,"remover") == 1){
-        /* code */
-    }
-    else if (strcmp(command,"inverter-prefixo") == 1){
-        /* code */
-    }
-    else if (strcmp(command,"inverter-sufixo") == 1){
-        /* code */
-    }
-    else if (strcmp(command,"transpor") == 1){
-        /* code */
-    }
-    else if (strcmp(command,"imprimir") == 1){
-
-    }
-    else if (strcmp(command,"sair") == 1){
-
-    }
-    
-    
     
 
     return 0;
