@@ -1,15 +1,14 @@
-inserir t 0
-inserir c 0
-inserir g 0
-inserir t 0
-inserir g 0
-inserir a 2
-inserir c 0
-inserir a 4
-inserir t 7
+inserir a 0
+inserir b 1
+inserir c 2
+inserir d 3
+inserir e 4
+inserir f 5
+inserir g 6
+inserir h 7
+inserir i 8
 imprimir
-transpor 2 3 3
+transpor 2 4 3
 imprimir
-transpor 4 7 -2
-imprimir
+imprimir_debug
 sair

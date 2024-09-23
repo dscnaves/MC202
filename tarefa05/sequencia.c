@@ -11,6 +11,7 @@ typedef struct Node {
 int TAMANHO_DNA;
 
 Node *create_new_node(char base) {
+  /*Esta função inicializa um nó da lista encadeada*/
 
   Node *p_novo_no =
       (Node *)malloc(sizeof(Node)); // Alocar o ponteiro para o novo nó
@@ -23,6 +24,7 @@ Node *create_new_node(char base) {
 void imprimir_debug(Node *p_DNA) {
   Node *atual = p_DNA;
   printf("sequencia \n");
+  int i = 0;
   while (atual != NULL) {
     if (atual->ant != NULL) {
       printf("%c ", atual->ant->base);
@@ -38,26 +40,49 @@ void imprimir_debug(Node *p_DNA) {
     }
     printf("\n");
     atual = atual->prox;
+    if (i == TAMANHO_DNA + 3) {
+      break;
+    }
+    i++;
   }
   printf("\n");
 }
 
 void imprimir(Node *p_DNA) {
+  /*Esta função imprime a sequencia de DNA da lista encadeada*/
   Node *atual = p_DNA;
   printf("sequencia ");
   int i = 0;
   while (atual != NULL) {
     if (i == TAMANHO_DNA - 1) {
       printf("%c\n", atual->base);
+      break;
     } else {
       printf("%c ", atual->base);
     }
     atual = atual->prox;
     i++;
   }
+
+  atual = p_DNA;
+  printf("sequencia ");
+  i = 0;
+  while (atual != NULL) {
+    if (i == TAMANHO_DNA - 1) {
+      printf("%d\n", i);
+      break;
+    } else {
+      printf("%d ", i);
+    }
+    i++;
+  }
 }
 
 void inverter(Node *p_DNA, int tamanho, int modo) {
+  /*Esta função inverte a ordem das "tamanho" primeiras letras do DNA*/
+  /*A variável "modo" indica se a função será do modo prefixo 1 ou do modo
+   * sufixo 2*/
+
   // Inverte uma trecho do DNA, tanto do sufixo quanto do prefixo
   // Modo = 1; Inverte o prefixo
   // Modo = 2; Inverte o sufixo
@@ -112,6 +137,8 @@ void inverter(Node *p_DNA, int tamanho, int modo) {
 }
 
 void inserir(Node **pp_DNA, Node *p_novo_no, int pos) {
+  /*Esta função insere o novo nó na posição "pos"*/
+
   // Inserir no início da  lista
   if (pos == 0) {
     if (*pp_DNA != NULL) {
@@ -146,6 +173,8 @@ void inserir(Node **pp_DNA, Node *p_novo_no, int pos) {
 }
 
 void remover(Node **pp_DNA, int pos) {
+  /*Esta função remove um respectivo nó na posição "pos"*/
+
   Node *p_atual = *pp_DNA; // Para modificar o p_DNA, preciso guardar o endereço
                            // de memória dele
   Node *p_no_removido = NULL;
@@ -178,6 +207,8 @@ void remover(Node **pp_DNA, int pos) {
 }
 
 void transpor(int p, int q, int r, Node **pp_DNA) {
+  /*Esta função transporta uma subsequência do DNA desde uma posição "p" até uma
+   * posição "q" em "r" posições*/
   Node *p_inicio = *pp_DNA;
   Node *p_fim = *pp_DNA;
 
@@ -190,21 +221,19 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
 
   Node *p_aux = p_inicio;
   printf("subsequencia ");
-  for (int i = 0; i < q - p; i++) {
+  for (int i = 0; i <= q - p; i++) {
     printf("%c ", p_aux->base);
     p_aux = p_aux->prox;
   }
 
   if (r >= 0) {
-    printf(" >> %d", r);
+    printf(">> %d\n", r);
   } else {
-    printf(" << %d", -r);
+    printf("<< %d\n", -r);
   }
 
   Node *p_novo_inicio = p_inicio;
   Node *p_novo_fim = p_fim;
-
-  imprimir_debug(*pp_DNA);
 
   if (r > 0) {
     for (int i = 0; i < r; i++) {
@@ -217,9 +246,28 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
       return;
     }
 
-    p_inicio->ant->prox = p_fim->prox;
-    p_novo_inicio->prox = p_inicio;
+    Node *p1 = p_inicio->ant;
+    Node *p2 = p_fim->prox;
+    Node *p3 = p_novo_inicio->prox;
+
+    p1->prox = p2;
+    p2->ant = p1;
+
+    p3->prox = p_inicio;
+    p_inicio->ant = p3;
+
+    p_fim->prox = p_novo_inicio;
     p_novo_fim->ant = p_fim;
+
+    // p_inicio->ant->prox = p_fim->prox;
+    // p_fim->prox->ant = p_inicio->ant;
+
+    // p_novo_inicio->prox = p_inicio;
+    // p_inicio->ant = p_novo_inicio;
+
+    // p_novo_fim->ant = p_fim;
+    // p_fim->prox = p_novo_fim;
+
   }
 
   else {
@@ -231,9 +279,8 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
         p_novo_fim == NULL) {
       return;
     }
-    p_inicio->ant->prox = p_fim->prox;
-    p_novo_inicio->prox = p_inicio;
-    p_novo_fim->ant = p_fim;
+
+    p_novo_inicio->ant = p_inicio;
   }
 }
 
