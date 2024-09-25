@@ -21,61 +21,15 @@ Node *create_new_node(char base) {
   return p_novo_no; // Retornará o ponteiro do novo nó alocado
 }
 
-void imprimir_debug(Node *p_DNA) {
-  Node *atual = p_DNA;
-  printf("sequencia \n");
-  int i = 0;
-  while (atual != NULL) {
-    if (atual->ant != NULL) {
-      printf("%c ", atual->ant->base);
-    } else {
-      printf("X ");
-    }
-    printf("%c ", atual->base);
-
-    if (atual->prox != NULL) {
-      printf("%c ", atual->prox->base);
-    } else {
-      printf("X ");
-    }
-    printf("\n");
-    atual = atual->prox;
-    if (i == TAMANHO_DNA + 3) {
-      break;
-    }
-    i++;
-  }
-  printf("\n");
-}
-
 void imprimir(Node *p_DNA) {
   /*Esta função imprime a sequencia de DNA da lista encadeada*/
   Node *atual = p_DNA;
   printf("sequencia ");
-  int i = 0;
   while (atual != NULL) {
-    if (i == TAMANHO_DNA - 1) {
-      printf("%c\n", atual->base);
-      break;
-    } else {
-      printf("%c ", atual->base);
-    }
+    printf("%c ", atual->base);
     atual = atual->prox;
-    i++;
   }
-
-  atual = p_DNA;
-  printf("sequencia ");
-  i = 0;
-  while (atual != NULL) {
-    if (i == TAMANHO_DNA - 1) {
-      printf("%d\n", i);
-      break;
-    } else {
-      printf("%d ", i);
-    }
-    i++;
-  }
+  printf("\n");
 }
 
 void inverter(Node *p_DNA, int tamanho, int modo) {
@@ -169,7 +123,7 @@ void inserir(Node **pp_DNA, Node *p_novo_no, int pos) {
   }
 
   TAMANHO_DNA++;
-  printf("%c inserido de %d\n", p_novo_no->base, pos);
+  printf("%c inserido em %d\n", p_novo_no->base, pos);
 }
 
 void remover(Node **pp_DNA, int pos) {
@@ -215,7 +169,7 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
   for (int i = 0; i < p && p_inicio != NULL; i++) {
     p_inicio = p_inicio->prox;
   }
-  for (int i = 0; i < q && p_inicio != NULL; i++) {
+  for (int i = 0; i < q && p_fim != NULL; i++) {
     p_fim = p_fim->prox;
   }
 
@@ -232,55 +186,94 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
     printf("<< %d\n", -r);
   }
 
-  Node *p_novo_inicio = p_inicio;
-  Node *p_novo_fim = p_fim;
+  if (r == 0) {
+    return;
+  }
 
   if (r > 0) {
-    for (int i = 0; i < r; i++) {
-      p_novo_fim = p_novo_fim->prox;
-      p_novo_inicio = p_novo_inicio->prox;
+
+    // Ponta da esquerda do segmento que será deslocado
+    Node *p_ponta_A = p_fim->prox;
+
+    // Ponta da direita que será deslocada
+    Node *p_ponta_B = p_ponta_A->prox;
+
+    // Elemento anterior à ponta B ao fim do avanço
+    Node *p_ponta_B_ant = NULL;
+
+    // Avança r-1 nós pela lista ou até chegar ao fim
+    for (int i = 0; i < r - 1 && p_ponta_B != NULL; i++) {
+      if (p_ponta_B->prox == NULL) {
+        // Condição para quando todos os elementos à direita do intervalo serão
+        // movidos
+        p_ponta_B_ant = p_ponta_B;
+      }
+      p_ponta_B = p_ponta_B->prox;
     }
 
-    if (p_inicio == NULL || p_fim == NULL || p_novo_inicio == NULL ||
-        p_novo_fim == NULL) {
-      return;
+    if (p_ponta_B == NULL) {
+      // Nesse caso, o movimento é apenas de um, logo o anterior ao ponto B é o
+      // próprio ponto A
+      p_ponta_B_ant = p_ponta_A;
+    } else if (p_ponta_B_ant == NULL) {
+      // Não chegou ao fim dos elementos, logo é possível acessar o atributo ant
+      // do nó
+      p_ponta_B_ant = p_ponta_B->ant;
     }
 
-    Node *p1 = p_inicio->ant;
-    Node *p2 = p_fim->prox;
-    Node *p3 = p_novo_inicio->prox;
+    Node *p_ant_primeiro = p_inicio->ant;
 
-    p1->prox = p2;
-    p2->ant = p1;
+    // Ligações da lista ligada
+    p_ant_primeiro->prox = p_ponta_A;
+    p_ponta_A->ant = p_ant_primeiro;
 
-    p3->prox = p_inicio;
-    p_inicio->ant = p3;
+    p_ponta_B_ant->prox = p_inicio;
+    p_inicio->ant = p_ponta_B_ant;
 
-    p_fim->prox = p_novo_inicio;
-    p_novo_fim->ant = p_fim;
-
-    // p_inicio->ant->prox = p_fim->prox;
-    // p_fim->prox->ant = p_inicio->ant;
-
-    // p_novo_inicio->prox = p_inicio;
-    // p_inicio->ant = p_novo_inicio;
-
-    // p_novo_fim->ant = p_fim;
-    // p_fim->prox = p_novo_fim;
+    p_fim->prox = p_ponta_B;
+    p_ponta_B_ant = p_fim;
 
   }
 
   else {
-    for (int i = 0; i < -r; i++) {
-      p_novo_fim = p_novo_fim->ant;
-      p_novo_inicio = p_novo_inicio->ant;
-    }
-    if (p_inicio == NULL || p_fim == NULL || p_novo_inicio == NULL ||
-        p_novo_fim == NULL) {
-      return;
+    // Analogamente para r > 0 mas agora ao invés se avançar, retrocede
+    Node *p_ponta_A = p_inicio->ant;
+    Node *p_ponta_B = p_ponta_A->ant;
+    Node *p_ponta_B_prox = NULL;
+
+    for (int i = 0; i < -r - 1 && p_ponta_B != NULL; i++) {
+      if (p_ponta_B->ant == NULL) {
+        p_ponta_B_prox = p_ponta_B;
+      }
+      p_ponta_B = p_ponta_B->ant;
     }
 
-    p_novo_inicio->ant = p_inicio;
+    if (p_ponta_B == NULL) {
+      p_ponta_B_prox = p_ponta_A;
+
+    } else if (p_ponta_B_prox == NULL) {
+      p_ponta_B_prox = p_ponta_B->prox;
+    }
+
+    Node *p_prox_fim = p_fim->prox;
+
+    // Ligações da lista ligada
+    p_ponta_A->prox = p_prox_fim;
+    if (p_prox_fim != NULL) {
+      p_prox_fim->ant = p_ponta_A;
+    }
+
+    p_ponta_B_prox->ant = p_fim;
+    p_fim->prox = p_ponta_B_prox;
+
+    p_inicio->ant = p_ponta_B;
+
+    // Verifica se umas das pontas vai se tornar o início da sequência de DNA
+    if (p_ponta_B != NULL) {
+      p_ponta_B->prox = p_inicio;
+    } else {
+      *pp_DNA = p_inicio;
+    }
   }
 }
 
@@ -289,10 +282,7 @@ int main() {
   Node *p_DNA =
       NULL; // Ponteiro que apontará para o início da lista encadeado (DNA)
   int tamanho;
-  while (1) {
-    if (scanf("%s", &command[0]) != 1) {
-      return 6;
-    }
+  while (scanf("%19s", command) == 1) {
 
     if (strcmp(command, "inserir") == 0) {
       char base;
@@ -334,8 +324,6 @@ int main() {
       transpor(p, q, r, &p_DNA);
     } else if (strcmp(command, "imprimir") == 0) {
       imprimir(p_DNA);
-    } else if (strcmp(command, "imprimir_debug") == 0) {
-      imprimir_debug(p_DNA);
     } else if (strcmp(command, "sair") == 0) {
       break;
     }
