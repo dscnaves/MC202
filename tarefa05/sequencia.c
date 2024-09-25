@@ -134,8 +134,10 @@ void remover(Node **pp_DNA, int pos) {
   Node *p_no_removido = NULL;
   // Remover no início da lista
   if (pos == 0) {
+    p_no_removido = p_atual;
     *pp_DNA = p_atual->prox;
     printf("%c removido de %d\n", p_no_removido->base, pos);
+    free(p_no_removido);
   }
 
   else {
@@ -277,6 +279,16 @@ void transpor(int p, int q, int r, Node **pp_DNA) {
   }
 }
 
+void liberar_lista(Node ** pp_DNA){
+  Node * p_atual = *pp_DNA;
+  Node * p_prox_no;
+  while (p_atual != NULL){
+    p_prox_no = p_atual->prox;
+    free(p_atual);
+    p_atual = p_prox_no;
+  }
+}
+
 int main() {
   char command[20];
   Node *p_DNA =
@@ -325,6 +337,7 @@ int main() {
     } else if (strcmp(command, "imprimir") == 0) {
       imprimir(p_DNA);
     } else if (strcmp(command, "sair") == 0) {
+      liberar_lista(&p_DNA);
       break;
     }
   }
