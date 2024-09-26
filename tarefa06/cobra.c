@@ -67,6 +67,10 @@ void movimenta_cobra(char ** matriz, No * cabeca, No * cauda, Posicao * prox_pos
     matriz[cabeca->x][cabeca->y] = '#'; // Coloca a nova cabeça
 }
 
+int verificar_colisao(No * cabeca, int x, int y){
+    
+}
+
 int main(){
     int m, n; //Dimensões da matriz
     scanf("MATRIZ %d %d", &m, &n);
@@ -116,43 +120,50 @@ int main(){
 
             //Para cima
             if (command =='w') {
-                if (prox_pos->y == n){ //Se a cobra ultrapassar as extremidades
-                    prox_pos->y = 0;
-                }
-                else {
-                    prox_pos->y = cabeca->y + 1;
-                }
-
-
-                if (matriz[prox_pos->x][prox_pos->y] == '_'){
-                    movimenta_cobra(matriz, cabeca, cauda, prox_pos);
-                }
-                else if (matriz[prox_pos->x][prox_pos->y] == '*'){
-                    //Alocando dinamicamente novo nó
-                    No * p_novo_no = malloc(sizeof(Posicao));
-                    alocar_no(&p_novo_no,prox_pos->x,prox_pos->y);
-
-                    p_novo_no->ant = cabeca;
-                    p_novo_no->prox = NULL;
-                    cabeca->prox = p_novo_no;
-                    
-                    cabeca = p_novo_no;
-                }
+                prox_pos.x = (cabeca->x - 1 + m) % m;
             }
             //Para baixo
             else if (command == 's'){
+                prox_pos.x = (cabeca->x + 1) % m;
             }
-
             //Para direita
             else if (command == 'd'){
+                prox_pos.y = (cabeca->y + 1) % n;
             }
-
             //Para esquerda
             else if (command == 'a'){
+                prox_pos.y = (cabeca->y - 1) % n;
+            }
+        }
+
+            //Verificar colisão com o próprio corpo
+
+
+            //Se a cobra encontrar uma fruta
+            if (matriz[prox_pos.x][prox_pos.y] == '*') {
+                No * p_novo_no;
+                alocar_no(&p_novo_no, prox_pos.x, prox_pos.y);
+                
+                p_novo_no->ant = cabeca;
+                cabeca->prox = p_novo_no;
+                cabeca = p_novo_no;
+
+                //Atualizar matriz
+                matriz[prox_pos.x][prox_pos.y] = '#';
+                tamanho_cobra++;
+
+                if (tamanho_cobra == total_posicoes){
+                    imprimir(m,n,matriz);
+                    prinft(" YOU WIN\n");
+                    break;
+                }
             }
 
-        imprimir(m,n,matriz);
-        }
+            //Se a cobra encontrar um espaço '_'
+            else {
+                movimenta_cobra(matriz, cabeca, cauda, prox_pos);
+            }
+            imprimir(m,n,matriz);
     }
 
     return 0;
