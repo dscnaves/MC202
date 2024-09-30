@@ -69,6 +69,7 @@ void dobra_memoria(p_vector v) {
 }
 
 void bat_alloc(int N, p_vector v, int *idx_alocado) {
+    
     // Verifica se consegue alocar sem dobrar a memória
     if (alocar_sem_dobrar_eh_possivel(v, N, idx_alocado)) {
         // Imprime o endereço de início da alocação
@@ -90,7 +91,7 @@ void bat_alloc(int N, p_vector v, int *idx_alocado) {
 }
 
 void bat_free(int endereco, p_vector v) {
-    int tamanho = v->dados[endereco];
+int tamanho = v->dados[endereco];
     for (int i = 0; i <= tamanho; i++) {
         v->dados[endereco + i] = 0;
     }
@@ -104,8 +105,14 @@ void bat_free(int endereco, p_vector v) {
     }
 
     // Verifica se pode reduzir o tamanho da memória
-    int nao_utilizados_final = v->alocado - v->utilizados;
-    if (v->alocado > MIN_VETOR && nao_utilizados_final > 3 * v->alocado / 4) {
+    int ocupacao_quarto_final = 0;
+    for (int i = v->alocado / 4; i < v->alocado; i++) {
+        if (v->dados[i] != 0) {
+            ocupacao_quarto_final++;
+        }
+    }
+
+    if (v->alocado > MIN_VETOR && ocupacao_quarto_final == 0) {
         int *p_aux = v->dados;
         int novo_tamanho = v->alocado / 2;
 
