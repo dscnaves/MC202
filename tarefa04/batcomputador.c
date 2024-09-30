@@ -91,7 +91,7 @@ void bat_alloc(int N, p_vector v, int *idx_alocado) {
 }
 
 void bat_free(int endereco, p_vector v) {
-int tamanho = v->dados[endereco];
+    int tamanho = v->dados[endereco];
     for (int i = 0; i <= tamanho; i++) {
         v->dados[endereco + i] = 0;
     }
@@ -104,30 +104,36 @@ int tamanho = v->dados[endereco];
         }
     }
 
-    // Verifica se pode reduzir o tamanho da memória
+
     int ocupacao_quarto_final = 0;
-    for (int i = v->alocado / 4; i < v->alocado; i++) {
-        if (v->dados[i] != 0) {
-            ocupacao_quarto_final++;
-        }
-    }
-
-    if (v->alocado > MIN_VETOR && ocupacao_quarto_final == 0) {
-        int *p_aux = v->dados;
-        int novo_tamanho = v->alocado / 2;
-
-        if (novo_tamanho < MIN_VETOR) novo_tamanho = MIN_VETOR;
-
-        v->dados = malloc(novo_tamanho * sizeof(int));
-
-        // Copia os dados antigos
-        for (int i = 0; i < novo_tamanho; i++) {
-            v->dados[i] = p_aux[i];
+    do {
+        // Verifica se pode reduzir o tamanho da memória
+        ocupacao_quarto_final = 0;
+        for (int i = v->alocado / 4; i < v->alocado; i++) {
+            if (v->dados[i] != 0) {
+                ocupacao_quarto_final++;
+            }
         }
 
-        v->alocado = novo_tamanho;
-        free(p_aux);
-    }
+        if (v->alocado > MIN_VETOR && ocupacao_quarto_final == 0) {
+            int *p_aux = v->dados;
+            int novo_tamanho = v->alocado / 2;
+
+            if (novo_tamanho < MIN_VETOR) novo_tamanho = MIN_VETOR;
+
+            v->dados = malloc(novo_tamanho * sizeof(int));
+
+            // Copia os dados antigos
+            for (int i = 0; i < novo_tamanho; i++) {
+                v->dados[i] = p_aux[i];
+            }
+
+            v->alocado = novo_tamanho;
+            free(p_aux);
+        }
+
+    } while (ocupacao_quarto_final == 0);
+
 }
 
 void bat_print(int endereco, p_vector v) {
