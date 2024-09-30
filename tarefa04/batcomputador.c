@@ -82,12 +82,7 @@ void bat_alloc(int N, p_vector v, int *idx_alocado) {
     }
 
     // Atualiza a quantidade de memória utilizada
-    v->utilizados = 0;
-    for (int i = 0; i < v->alocado; i++) {
-        if (v->dados[i] != 0) {
-            v->utilizados++;
-        }
-    }
+    v->utilizados += N + 1;
 }
 
 void bat_free(int endereco, p_vector v) {
@@ -97,12 +92,7 @@ void bat_free(int endereco, p_vector v) {
     }
 
     // Atualiza a quantidade de memória utilizada
-    v->utilizados = 0;
-    for (int i = 0; i < v->alocado; i++) {
-        if (v->dados[i] != 0) {
-            v->utilizados++;
-        }
-    }
+    v->utilizados -= tamanho + 1;
 
 
     int ocupacao_quarto_final = 0;
