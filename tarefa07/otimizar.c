@@ -96,27 +96,25 @@ Node * simplificar_negacao(Node * raiz){
     return raiz;
 }
 
-is_variavel(Node * exp){
+int is_variavel(Node * exp){
     if (is_lower(exp->valor) || exp->valor == 'T' || exp->valor == 'F') return 1;
     else return 0;
 }
 
 //Função para verificar se duas expressões são equivalentes
-int is_equivalente (Node * exp1, Node * exp2, Node * raiz){
+int is_equivalente (Node * exp1, Node * exp2){
     //Caso base: exp1 ou exp2 forem variáveis
     if (is_variavel(exp1) || is_variavel(exp2)){
         if (exp1->valor == exp2->valor) return 1;
         else return 0;
     }
     //caso geral:
-    if (raiz->valor == '&' || raiz->valor == '|'){ //Verificando se o operador é '&' ou '|'
-        if (is_equivalente(exp1->left, exp2->left, raiz) && is_equivalente(exp1->right, exp2->right, raiz) 
-    || (is_equivalente(exp1->left, exp2->right,raiz) && is_equivalente(exp1->right, exp2->left,raiz))) return 1;
-    } 
-
-    else if (exp1->valor == '!' && exp2->valor == '!'){
+    if (exp1->valor == '!' && exp2->valor == '!'){
         if (is_equivalente(exp1->left, exp2->left)) return 1;
     }
+    
+    if ((is_equivalente(exp1->left, exp2->left) && is_equivalente(exp1->right, exp2->right)) || (is_equivalente(exp1->left, exp2->right) && is_equivalente(exp1->right, exp2->left))) return 1;
+    return -1;
 }
 
 //Função para liberar dinamicamente memória da árvore
@@ -131,7 +129,7 @@ void destruir_arvore(Node * raiz){
 Node * simplificar(Node * raiz){
     if (raiz == NULL) return NULL; //Ponto de parada da recursão é quando se chega a um nó que não tem mais filhos, ou seja, uma folha
 
-    // Simplificação de subárvores
+        // Simplificação de subárvores
     raiz->left = simplificar(raiz->left);
     raiz->right = simplificar(raiz->right);
 
@@ -140,29 +138,32 @@ Node * simplificar(Node * raiz){
         if (raiz->left->valor == 'T') return raiz->right; // x&T=x
         if (raiz->right->valor == 'T') return raiz->left; // T&x=x
         if (raiz->left->valor == 'F' || raiz->right->valor == 'F') {
-            destruir_arvore(raiz);
-            return create_node('F', NULL, NULL); //F&x = F ou x&F = F
+            destruir_arvore(raiz); //Destruir antigo nó que agora seŕa atualizado pela nova simplificação
+            return create_node('F', NULL, NULL); //F&x = F ou x&F = F  =>  Criando novo nó para atualizar anterior que foi simplificado agora
         }
-        /*
-        is_equivalente(raiz->left, raiz->right) = true
-            tmp = raiz
-            raiz = raiz->left
-            destruir_arvore(tmp->right)
-            free(tmp)
-        */
-    }
-    else if (raiz->valor == '|') {
-        if (raiz->left->valor == 'F') return raiz->right; // x&F=x
-        if (raiz->right->valor == 'F') return raiz->left; // F&x=x
-        if (raiz->left->valor == 'T' || raiz->right->valor == 'T') return create_node('T', NULL, NULL); //T&x = T ou x&T = T
-    }
-    else if (raiz->valor == '!') {
-        if (raiz->left->valor == 'T') return create_node('F', NULL, NULL); //!T = F
-        if (raiz->left->valor == 'F') return create_node('T', NULL, NULL); //!F = T
-    }
 
-    // Retorna a raiz após simplificação
-    return raiz;
+            //Verificando se existem expressões equivalente dentro do código
+        if (is_equivalente(raiz->left, raiz->right) == 1){
+            Node * tmp = raiz; //Guarda o endereço da árvore
+            raiz = raiz->left; //Faz a expressão que é equivalente assumir a raiz, ou seja, Se A=B => A|B = A
+            destruir_arvore(tmp->right); //Libera o ramo direito que não será mais usado, porque já fizemos A|B = A, ou seja, ão precisamos de B
+            free(tmp); // Dá free no antigo ramo esquerdo da árvore que agr assumiu o valor da raiz
+        }
+
+        else if (raiz->valor == '|') {
+            if (raiz->left->valor == 'F') return raiz->right; // x&F=x
+            if (raiz->right->valor == 'F') return raiz->left; // F&x=x
+            if (raiz->left->valor == 'T' || raiz->right->valor == 'T') return create_node('T', NULL, NULL); //T&x = T ou x&T = T
+        }
+        else if (raiz->valor == '!') {
+            if (raiz->left->valor == 'T') return create_node('F', NULL, NULL); //!T = F
+            if (raiz->left->valor == 'F') return create_node('T', NULL, NULL); //!F = T
+        }
+
+        // Retorna a raiz após simplificação
+        return raiz;
+    }
+    return NULL;
 }
 
 void imprimir(Node * raiz) {
