@@ -3,9 +3,9 @@
 #include <math.h>
 
 typedef struct {
-    float *original_vector;
-    float *max_min_normal_vector;
-    float *euclides_normal_vector;
+    double *original_vector;
+    double *max_min_normal_vector;
+    double *euclides_normal_vector;
 } Vector;
 
 typedef struct {
@@ -31,9 +31,9 @@ Matrix * create_matrix(int n, int d){
     }
 
     for (int i = 0; i < n; i++) {
-        m->vetores[i].original_vector = (float*) malloc(d * sizeof(float));
-        m->vetores[i].max_min_normal_vector = (float*) malloc(d * sizeof(float));
-        m->vetores[i].euclides_normal_vector = (float*) malloc(d * sizeof(float));
+        m->vetores[i].original_vector = (double*) malloc(d * sizeof(double));
+        m->vetores[i].max_min_normal_vector = (double*) malloc(d * sizeof(double));
+        m->vetores[i].euclides_normal_vector = (double*) malloc(d * sizeof(double));
     }
     
     return m;
@@ -49,8 +49,8 @@ void free_matrix(Matrix * m){
     free(m);
 }
 
-float modulus(Vector * v, int d){
-    float soma_quadrados = 0;
+double modulus(Vector * v, int d){
+    double soma_quadrados = 0;
     for (int i = 0; i < d; i++){
         soma_quadrados += pow(v->original_vector[i], 2);
     }
@@ -58,8 +58,8 @@ float modulus(Vector * v, int d){
 }
 
 void max_min_normalize(Matrix * m, int idx, int d){
-    float x_min = m->vetores[idx].original_vector[0];
-    float x_max = m->vetores[idx].original_vector[0];
+    double x_min = m->vetores[idx].original_vector[0];
+    double x_max = m->vetores[idx].original_vector[0];
 
     for (int j = 1; j < d; j++){
         if (x_min > m->vetores[idx].original_vector[j]){
@@ -80,7 +80,7 @@ void max_min_normalize(Matrix * m, int idx, int d){
 }
 
 void euclidean_normalize(Matrix *m, int idx, int d) {
-    float mod = modulus(&m->vetores[idx], d);
+    double mod = modulus(&m->vetores[idx], d);
     for (int j = 0; j < d; j++) {
         if (mod != 0) {
             m->vetores[idx].euclides_normal_vector[j] = m->vetores[idx].original_vector[j] / mod;
@@ -93,7 +93,7 @@ void euclidean_normalize(Matrix *m, int idx, int d) {
 void calculate_centroid_none(Matrix *m, int d, int n) {
     printf("nenhum: ");
     for (int j = 0; j < d; j++) {
-        float soma = 0;
+        double soma = 0;
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].original_vector[j];
         }
@@ -105,7 +105,7 @@ void calculate_centroid_none(Matrix *m, int d, int n) {
 void calculate_centroid_max_min(Matrix *m, int d, int n) {
     printf("janela: ");
     for (int j = 0; j < d; j++) {
-        float soma = 0;
+        double soma = 0;
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].max_min_normal_vector[j];
         }
@@ -117,7 +117,7 @@ void calculate_centroid_max_min(Matrix *m, int d, int n) {
 void calculate_centroid_euclidean(Matrix *m, int d, int n) {
     printf("normal: ");
     for (int j = 0; j < d; j++) {
-        float soma = 0;
+        double soma = 0;
         for (int i = 0; i < n; i++) {
             soma += m->vetores[i].euclides_normal_vector[j];
         }
@@ -136,7 +136,7 @@ int main(){
     // Leitura dos dados
     for (int k = 0; k < n; k++) {
         for (int h = 0; h < d; h++) {
-            scanf("%f", &m->vetores[k].original_vector[h]);
+            scanf("%lf", &m->vetores[k].original_vector[h]);
         }
     }
 
