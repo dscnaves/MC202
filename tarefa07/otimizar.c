@@ -131,9 +131,7 @@ void destruir_arvore(Node * raiz){
 Node * simplificar(Node * raiz){
     if (raiz == NULL) return NULL; //Ponto de parada da recursão é quando se chega a um nó que não tem mais filhos, ou seja, uma folha
 
-    // Simplificação de subárvores
-    raiz->left = simplificar(raiz->left);
-    raiz->right = simplificar(raiz->right);
+    
 
     // Regras de simplificação
     if (raiz->valor == '&') {
@@ -172,6 +170,11 @@ Node * simplificar(Node * raiz){
         }
 
     }
+
+    // Simplificação de subárvores
+    raiz->left = simplificar(raiz->left);
+    raiz->right = simplificar(raiz->right);
+    
     // Retorna a raiz após simplificação
     return raiz;
 }
