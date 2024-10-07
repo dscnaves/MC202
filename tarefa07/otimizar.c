@@ -96,25 +96,37 @@ Node * simplificar_negacao(Node * raiz){
     return raiz;
 }
 
-/*função is_equiv(*exp1, *exp2)
-    caso base:
-    exp1->valor é minusculo ou T ou F ou exp2->valor é minusculo ou T ou F
-        se exp1->valor == exp2->valor return true;
-        senão return false;
-    caso geral:
-    se operador & ou |
-    (is_equiv(exp1->left, exp2->left) && is_equiv(exp1->right, exp2->right) 
-    || (is_equiv(exp1->left, exp2->right) && is_equiv(exp1->right, exp2->left))) return true
-    se não exp1->valor = '!' && exp2->valor = '!'
-        is_equi(exp1->left, exp2->left) reutrn true
+is_variavel(Node * exp){
+    if (is_lower(exp->valor) || exp->valor == 'T' || exp->valor == 'F') return 1;
+    else return 0;
+}
 
-funçao destruir_arvore(raiz)
-    if (raiz != NULL){
-        destruir_arvore(raiz->left)
-        destruir_arvore(raiz->right)
-        free(raiz)
+//Função para verificar se duas expressões são equivalentes
+int is_equivalente (Node * exp1, Node * exp2, Node * raiz){
+    //Caso base: exp1 ou exp2 forem variáveis
+    if (is_variavel(exp1) || is_variavel(exp2)){
+        if (exp1->valor == exp2->valor) return 1;
+        else return 0;
+    }
+    //caso geral:
+    if (raiz->valor == '&' || raiz->valor == '|'){ //Verificando se o operador é '&' ou '|'
+        if (is_equivalente(exp1->left, exp2->left, raiz) && is_equivalente(exp1->right, exp2->right, raiz) 
+    || (is_equivalente(exp1->left, exp2->right,raiz) && is_equivalente(exp1->right, exp2->left,raiz))) return 1;
+    } 
+
+    else if (exp1->valor == '!' && exp2->valor == '!'){
+        if (is_equivalente(exp1->left, exp2->left)) return 1;
+    }
+}
+
+//Função para liberar dinamicamente memória da árvore
+void destruir_arvore(Node * raiz){
+    if (raiz->left != NULL || raiz->right != NULL){
+        destruir_arvore(raiz->left);
+        destruir_arvore(raiz->right);
+        free(raiz);
     }    
-*/
+}
 
 Node * simplificar(Node * raiz){
     if (raiz == NULL) return NULL; //Ponto de parada da recursão é quando se chega a um nó que não tem mais filhos, ou seja, uma folha
@@ -128,13 +140,15 @@ Node * simplificar(Node * raiz){
         if (raiz->left->valor == 'T') return raiz->right; // x&T=x
         if (raiz->right->valor == 'T') return raiz->left; // T&x=x
         if (raiz->left->valor == 'F' || raiz->right->valor == 'F') {
-            //destruir_arvore(raiz)
+            destruir_arvore(raiz);
             return create_node('F', NULL, NULL); //F&x = F ou x&F = F
         }
         /*
-        is_equi = true
+        is_equivalente(raiz->left, raiz->right) = true
+            tmp = raiz
             raiz = raiz->left
-
+            destruir_arvore(tmp->right)
+            free(tmp)
         */
     }
     else if (raiz->valor == '|') {
