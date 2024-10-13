@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_EXPRESSION 1000
+#define MAX_EXPRESSION 10000
 
 // Definição da estrutura de nó da árvore
 typedef struct Node {
@@ -100,8 +100,16 @@ Node* simplificar(Node* raiz) {
     raiz->right = simplificar(raiz->right);
 
     if (raiz->valor == '&') {
-        if (raiz->left->valor == 'T') return raiz->right;
-        if (raiz->right->valor == 'T') return raiz->left;
+        if (raiz->left->valor == 'T') {
+            Node* temp = raiz->right;
+            free(raiz);
+            return temp;
+        }
+        if (raiz->right->valor == 'T') {
+            Node* temp = raiz->left;
+            free(raiz);
+            return temp;
+        }
         if (raiz->left->valor == 'F' || raiz->right->valor == 'F') {
             free(raiz);
             return create_node('F', NULL, NULL);
@@ -111,8 +119,16 @@ Node* simplificar(Node* raiz) {
             return raiz->left;
         }
     } else if (raiz->valor == '|') {
-        if (raiz->left->valor == 'F') return raiz->right;
-        if (raiz->right->valor == 'F') return raiz->left;
+        if (raiz->left->valor == 'F') {
+            Node* temp = raiz->right;
+            free(raiz);
+            return temp;
+        }
+        if (raiz->right->valor == 'F') {
+            Node* temp = raiz->left;
+            free(raiz);
+            return temp;
+        }
         if (raiz->left->valor == 'T' || raiz->right->valor == 'T') {
             free(raiz);
             return create_node('T', NULL, NULL);
