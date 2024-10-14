@@ -21,7 +21,10 @@ Quad_tree * initialize_tree(int x_min, int x_max, int y_min, int y_max){
     p_node->x_max = x_max;
     p_node->y_min = y_min;
     p_node->y_max = y_max;
-    City * p_city = malloc(sizeof(City *));
+    for (int i = 0; i < 4; i++) {
+        p_node->children[i] = NULL;
+    }
+    p_node->city = NULL;
     return p_node;
 }
 
@@ -55,12 +58,27 @@ int which_quadrant(int x, int y, int mid_x, int mid_y){
 
 void insert_city(Quad_tree * node, int x, int y, char * p_city_name) {
     if (is_no_vazio(node)){
-        initialize_city(node, x,y, &p_city_name);
-        printf("Cidade %s inserida no ponto (%d,%d).\n", &p_city_name, x, y);
+        initialize_city(node, x,y, p_city_name);
+        printf("Cidade %s inserida no ponto (%d,%d).\n", p_city_name, x, y);
     }
-    //Se no nó for ocupado ou interno
-    else{
 
+    //Se no nó for ocupado (Já contém uma cidade) ou interno (Possui filhos)
+    else{
+        //Determinando qual quadrante a cidade deve ser inserida
+        int mid_x = (node->x_min + node->x_max) / 2; //Dividir o espaço atual em quatro quadrantes que serão os quadrantes da subárvore que iremos criar se for uma folha ocupada
+        int mid_y = (node->y_min + node->y_max) / 2;
+        int quadrant = which_quadrant(x,y,mid_x, mid_y); //Analisar em qual quadrante da subárvore a cidade a ser inserida pertence
+
+        //Se não existe ainda o quadrante para inserir a árvore OU SEJA chegamos a uma folha ocupada => Expandimos a árvore na direção do quadrante que iremos adicionar a árvore
+        if (node->children[quadrant] == NULL){            
+            if (quadrant == 0) node->children[quadrant] = initialize_tree(node->x_min, mid_x, mid_y, node->y_max);
+            else if (quadrant == 1) node->children[quadrant] = initialize_tree(mid_x, node->x_max, mid_y, node->y_max);
+            else if (quadrant == 2) node->children[quadrant] = initialize_tree(node->x_min, mid_x, node->y_min, mid_y);
+            else node->children[quadrant] = initialize_tree(mid_x, node->x_max, node->y_min, mid_y);
+        }
+
+        //Se o nó for interno => Continue percorrendo a árvore na direção do quadrante que devemos inserir
+        insert_city(node->children[quadrant], x, y, p_city_name);
     }
 }
 
@@ -104,7 +122,9 @@ int main(){
         if (strcmp(command, "i") == 0){
             int x, y;
             char city_name;
-            scanf("%d %d %s",x , y, city_name);
+            scanf("%d %d %s", &x, &y, &city_name);
+
+            insert_city(root,x,y,&city_name);
         }
 
         //Busca por ponto
