@@ -110,7 +110,7 @@ City * search_city(Quad_tree * node, int x ,int y){
 
 void remove_city(Quad_tree *node, int x, int y){
     //Caso base: Chegamos a um nó folha ocupada e removemos a cidade
-    if (node->city != NULL & node->city->x == x && node->city->y){
+    if (node->city != NULL && node->city->x == x && node->city->y){
         printf("Cidade %s removidae do ponto (%d,%d).\n", node->city->name,x,y);
         free(node->city);
         node->city = NULL;
@@ -124,6 +124,50 @@ void remove_city(Quad_tree *node, int x, int y){
     if (node->children[quadrant] != NULL){
         remove_city(node->children[quadrant],x,y);
     }    
+}
+
+void search_region(Quad_tree *node, int x, int y, int r){
+    if (node == NULL) return;
+
+    //Nó folha ocupada
+    // Se o nó contém uma cidade, verifica se está dentro da região
+    if (node->city != NULL) {
+        int dx = node->city->x - x;
+        int dy = node->city->y - y;
+
+        int distance_sq = dx * dx + dy * dy;
+
+        if (distance_sq <= r * r) {
+            printf("%s ", node->city->name);
+        }
+    }
+
+    // Nó interno
+    // Verificação dos quadrantes
+    for (int i = 0; i < 4; i++) {
+        //determinar se um quadrante (filho) da árvore quaternária pode potencialmente conter uma cidade dentro da região de busca
+
+        //Calcular a distância mínima entre o círculo e um quadrante => Se o quadrante não pertence ao círculo => Descartar
+        if (node->children[i] != NULL) {
+
+            // Determina o ponto mais próximo ao centro da região de busca dentro do quadrante
+            int closest_x = (x < node->children[i]->x_min) ? node->children[i]->x_min : ((x > node->children[i]->x_max) ? node->children[i]->x_max : x);
+                        
+            int closest_y = (y < node->children[i]->y_min) ? node->children[i]->y_min :
+                            (y > node->children[i]->y_max) ? node->children[i]->y_max : y;
+
+            // Calcula a distância do ponto mais próximo ao centro do círculo
+            int dx = closest_x - x;
+            int dy = closest_y - y;
+
+            int distance_sq = dx * dx + dy * dy;
+            
+            //Se essa distância for menor ou igual ao raio do círculo => o ponto mais próximo está dentro do círculo => o quadrante pode conter cidades dentro da região de busca
+            if (distance_sq <= r * r) {
+                search_region(node->children[i], x, y, r);
+            }
+        }
+    }
 }
 
 
@@ -187,7 +231,11 @@ int main(){
 
         //Busca por região
         else if (strcmp(command, "o") == 0){
-            /* code */
+            int x, y, r;
+            scanf("%d %d %d", &x, &y, &r);
+            printf("Cidades a distancia %d de (%d,%d): ", r, x, y);
+            search_region(root, x, y, r);
+            printf("\n");
         }
 
         //Remoção
