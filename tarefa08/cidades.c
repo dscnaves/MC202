@@ -108,6 +108,24 @@ City * search_city(Quad_tree * node, int x ,int y){
     return NULL; //Fomos até o final da árvore e não foi encontrado
 }
 
+void remove_city(Quad_tree *node, int x, int y){
+    //Caso base: Chegamos a um nó folha ocupada e removemos a cidade
+    if (node->city != NULL & node->city->x == x && node->city->y){
+        printf("Cidade %s removidae do ponto (%d,%d).\n", node->city->name,x,y);
+        free(node->city);
+        node->city = NULL;
+    }
+
+    //Se for um nó interno => Procuramos dentro do próximo quadrante o qual a cidade pode esta de acordo com seu valores de x,y
+    int mid_x = (node->x_min + node->x_max) / 2;
+    int mid_y = (node->y_min + node->y_max) / 2;
+    int quadrant = which_quadrant(x, y, mid_x, mid_y); 
+
+    if (node->children[quadrant] != NULL){
+        remove_city(node->children[quadrant],x,y);
+    }    
+}
+
 
 
 void print_tree(Quad_tree *node, int depth){
@@ -156,7 +174,15 @@ int main(){
 
         //Busca por ponto
         else if (strcmp(command, "b") == 0){
-            /* code */
+            int x, y;
+            scanf("%d %d", &x, &y);
+            City *city = search_city(root, x, y);
+
+            if (city != NULL) {
+                printf("Cidade %s encontrada no ponto (%d,%d).\n", city->name, city->x, city->y);
+            } else {
+                printf("Nenhuma cidade encontrada no ponto (%d,%d).\n", x, y);
+            }
         }
 
         //Busca por região
@@ -166,7 +192,9 @@ int main(){
 
         //Remoção
         else if (strcmp(command, "r") == 0){
-            /* code */
+            int x, y;
+            scanf("%d %d", &x, &y);
+            remove_city(root, x, y);
         }
 
         //Impressão
