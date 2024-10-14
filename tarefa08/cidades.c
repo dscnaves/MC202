@@ -111,7 +111,7 @@ City * search_city(Quad_tree * node, int x ,int y){
 void remove_city(Quad_tree *node, int x, int y){
     //Caso base: Chegamos a um nó folha ocupada e removemos a cidade
     if (node->city != NULL && node->city->x == x && node->city->y){
-        printf("Cidade %s removidae do ponto (%d,%d).\n", node->city->name,x,y);
+        printf("Cidade %s removida do ponto (%d,%d).\n", node->city->name,x,y);
         free(node->city);
         node->city = NULL;
     }
@@ -196,6 +196,28 @@ void print_tree(Quad_tree *node, int depth){
     }
 }
 
+void free_quad_tree(Quad_tree * node){
+    //Se for uma folha vazia
+    if (node == NULL) return;  // Se o nó for NULL, não há nada para liberar
+
+    //Se o nó for interno
+    // Percorre todos os filhos (quadrantes) e libera recursivamente
+    for (int i = 0; i < 4; i++) {
+        if (node->children[i] != NULL) {
+            free_quad_tree(node->children[i]);  // Libera o sub-nó do quadrante
+        }
+    }
+
+    //Se for uma folha ocupada
+    // Se há uma cidade neste nó, libere a memória da cidade
+    if (node->city != NULL) {
+        free(node->city);
+    }
+
+    // Finalmente, libera o próprio nó
+    free(node);
+}
+
 int main(){
     int size; //lado quadrado que representa o mapa
     scanf("%d",&size);
@@ -254,6 +276,7 @@ int main(){
         //Sair
         else if (strcmp(command, "s") == 0){
             printf("Sistema encerrado.\n");
+            free_quad_tree(root);
             break;
         } 
     }
