@@ -16,7 +16,11 @@ typedef struct Quad_tree{
 } Quad_tree;
 
 Quad_tree * initialize_tree(int x_min, int x_max, int y_min, int y_max){
-    Quad_tree * p_node = malloc(sizeof(Quad_tree *));
+    Quad_tree * p_node = malloc(sizeof(Quad_tree));
+    if (p_node == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(1);
+    }
     p_node->x_min = x_min;
     p_node->x_max = x_max;
     p_node->y_min = y_min;
@@ -28,9 +32,13 @@ Quad_tree * initialize_tree(int x_min, int x_max, int y_min, int y_max){
     return p_node;
 }
 
-City * initialize_city(Quad_tree * node, int x, int y, char city_name[MAX_LEN_CITY]){
+void initialize_city(Quad_tree * node, int x, int y, char city_name[MAX_LEN_CITY]){
     //node será o nó da árvore onde será inserido a cidade
-    node->city = malloc(sizeof(City*));
+    node->city = malloc(sizeof(City));
+    if (node->city == NULL) {
+        printf("Erro ao alocar memória para a cidade.\n");
+        exit(1);
+    }
     node->city->x = x;
     node->city->y = y;
     strncpy(node->city->name, city_name, MAX_LEN_CITY); //Para evitar erros como estouro de buffer
@@ -82,7 +90,28 @@ void insert_city(Quad_tree * node, int x, int y, char * p_city_name) {
     }
 }
 
+City * search_city(Quad_tree * node, int x ,int y){
+    //Caso base: Encontrou a cidade (coordenadas bateiram) => retorna o endereço da cidade
+    if (node->city != NULL && node->city->x == x && node->city->y == y){
+        return node->city;
+    }
+
+    //Se não encontrou procure no próximo quadrande onde a cidade pode estar
+    int mid_x = (node->x_min + node->x_max) / 2;
+    int mid_y = (node->y_min + node->y_max) / 2;
+    int quadrant = which_quadrant(x, y, mid_x, mid_y);
+
+    if (node->children[quadrant] != NULL){//Se o quadrante existe, procure dentro dele
+        return search_city(node->children[quadrant], x, y);
+    }
+
+    return NULL; //Fomos até o final da árvore e não foi encontrado
+}
+
+
+
 void print_tree(Quad_tree *node, int depth){
+    if (node == NULL) return;  // Caso base: nó é nulo
 
     //Caso de parada: Se o nó contém uma cidade, imprime a cidade
     if (node->city != NULL) {
@@ -96,8 +125,6 @@ void print_tree(Quad_tree *node, int depth){
         for (int i = 0; i < 4; i++) {
             if (node->children[i] != NULL) {
                 print_tree(node->children[i], depth + 1);
-            } else {
-                printf("  %*sV\n", (depth + 1) * 2, "");
             }
         }
     } 
@@ -121,10 +148,10 @@ int main(){
         //Inserção
         if (strcmp(command, "i") == 0){
             int x, y;
-            char city_name;
-            scanf("%d %d %s", &x, &y, &city_name);
+            char city_name[MAX_LEN_CITY];
+            scanf("%d %d %s", &x, &y, city_name);
 
-            insert_city(root,x,y,&city_name);
+            insert_city(root,x,y,city_name);
         }
 
         //Busca por ponto
@@ -145,8 +172,14 @@ int main(){
         //Impressão
         else if (strcmp(command, "p") == 0) {
             printf("Árvore:\n");
-            
-        }     
+            int depth = 1;
+            print_tree(root, depth);
+        }
+        //Sair
+        else if (strcmp(command, "s") == 0){
+            printf("Sistema encerrado.\n");
+            break;
+        } 
     }
     return 0;
 }
