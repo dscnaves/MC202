@@ -11,40 +11,73 @@ typedef struct City {
 
 typedef struct Quad_tree{
     int x_min, x_max, y_min, y_max;
-    struct Quad_tree * children[4]; //1: 1° quadrante NE, 2: 2° quadrante NO, 3: 3° quadrante SO, 4: 4° quadrante SE
+    struct Quad_tree * children[4];
     City * city;
 } Quad_tree;
 
 Quad_tree * initialize_tree(int x_min, int x_max, int y_min, int y_max){
-    Quad_tree * p_root = malloc(sizeof(Quad_tree *));
-    p_root->x_min = x_min;
-    p_root->x_max = x_max;
-    p_root->y_min = y_min;
-    p_root->y_max = y_max;
+    Quad_tree * p_node = malloc(sizeof(Quad_tree *));
+    p_node->x_min = x_min;
+    p_node->x_max = x_max;
+    p_node->y_min = y_min;
+    p_node->y_max = y_max;
     City * p_city = malloc(sizeof(City *));
-    return p_root;
+    return p_node;
 }
 
-int is_no_interno(Quad_tree * root){
+City * initialize_city(Quad_tree * node, int x, int y, char city_name[MAX_LEN_CITY]){
+    //node será o nó da árvore onde será inserido a cidade
+    node->city = malloc(sizeof(City*));
+    node->city->x = x;
+    node->city->y = y;
+    strncpy(node->city->name, city_name, MAX_LEN_CITY); //Para evitar erros como estouro de buffer
+}
+
+int is_no_interno(Quad_tree * node){
     //Se um nó é interno então ele possui pelo menos 1 filho
-    if (root->children[0] != NULL || root->children[1] != NULL || root->children[2] != NULL || root->children[3] != NULL) return 1;
+    if (node->children[0] != NULL || node->children[1] != NULL || node->children[2] != NULL || node->children[3] != NULL) return 1;
     return 0;
 }
 
-void print_tree(Quad_tree *root, int depth){
+int is_no_vazio (Quad_tree * node){
+    //Se um nó é vazio: ele é folha (todos os filhos são NULL) e ele não contém uma cidade nele
+    if (node->city == NULL && node->children[0] == NULL && node->children[1] == NULL &&
+        node->children[2] == NULL && node->children[3] == NULL) return 1;
+    return 0;
+}
+
+int which_quadrant(int x, int y, int mid_x, int mid_y){
+    if (x < mid_x && y >= mid_y) return 0; // NO
+    if (x >= mid_x && y >= mid_y) return 1; // NE
+    if (x < mid_x && y < mid_y) return 2; // SO
+    return 3; // SE
+}
+
+void insert_city(Quad_tree * node, int x, int y, char * p_city_name) {
+    if (is_no_vazio(node)){
+        initialize_city(node, x,y, &p_city_name);
+        printf("Cidade %s inserida no ponto (%d,%d).\n", &p_city_name, x, y);
+    }
+    //Se no nó for ocupado ou interno
+    else{
+
+    }
+}
+
+void print_tree(Quad_tree *node, int depth){
 
     //Caso de parada: Se o nó contém uma cidade, imprime a cidade
-    if (root->city != NULL) {
-        printf("  %*sCidade %s (%d,%d)\n", depth * 2, "", root->city->name, root->city->x, root->city->y);
+    if (node->city != NULL) {
+        printf("  %*sCidade %s (%d,%d)\n", depth * 2, "", node->city->name, node->city->x, node->city->y);
     }
 
     //Se o nó for um nó interno 
-    else if (is_no_interno(root) == 1) {
+    else if (is_no_interno(node) == 1) {
         printf("  %*sI\n", depth * 2, "");
 
         for (int i = 0; i < 4; i++) {
-            if (root->children[i] != NULL) {
-                print_tree(root->children[i], depth + 1);
+            if (node->children[i] != NULL) {
+                print_tree(node->children[i], depth + 1);
             } else {
                 printf("  %*sV\n", (depth + 1) * 2, "");
             }
@@ -69,7 +102,9 @@ int main(){
 
         //Inserção
         if (strcmp(command, "i") == 0){
-            /* code */
+            int x, y;
+            char city_name;
+            scanf("%d %d %s",x , y, city_name);
         }
 
         //Busca por ponto
