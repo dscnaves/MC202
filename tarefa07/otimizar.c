@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_EXPRESSION 10000
+#define MAX_EXPRESSION 1000
 
 // Definição da estrutura de nó da árvore
 typedef struct Node {
@@ -24,20 +24,23 @@ int is_lower(char c) {
 }
 
 // Função para construir a árvore a partir da expressão
-Node* build_tree(char expression[], int* aux_pointer) {
-    char c = expression[*aux_pointer];
-    (*aux_pointer)++;
+Node* build_tree() {
+    char c;
+    scanf("%c", &c);
 
     if (c == 'T' || c == 'F' || is_lower(c)) {
         return create_node(c, NULL, NULL);
     } else if (c == '!') {
-        return create_node(c, build_tree(expression, aux_pointer), NULL);
+        return create_node(c, build_tree(), NULL);
     } else if (c == '(') {
-        Node* left = build_tree(expression, aux_pointer);
-        char operator = expression[*aux_pointer];
-        (*aux_pointer)++;
-        Node* right = build_tree(expression, aux_pointer);
-        (*aux_pointer)++;
+        Node* left = build_tree();
+        char operator;
+        scanf("%c", &operator);
+        
+        Node* right = build_tree();
+        char parenteses;
+        scanf("%c", &parenteses);
+        
         return create_node(operator, left, right);
     }
     return NULL;
@@ -100,16 +103,8 @@ Node* simplificar(Node* raiz) {
     raiz->right = simplificar(raiz->right);
 
     if (raiz->valor == '&') {
-        if (raiz->left->valor == 'T') {
-            Node* temp = raiz->right;
-            free(raiz);
-            return temp;
-        }
-        if (raiz->right->valor == 'T') {
-            Node* temp = raiz->left;
-            free(raiz);
-            return temp;
-        }
+        if (raiz->left->valor == 'T') return raiz->right;
+        if (raiz->right->valor == 'T') return raiz->left;
         if (raiz->left->valor == 'F' || raiz->right->valor == 'F') {
             free(raiz);
             return create_node('F', NULL, NULL);
@@ -119,16 +114,8 @@ Node* simplificar(Node* raiz) {
             return raiz->left;
         }
     } else if (raiz->valor == '|') {
-        if (raiz->left->valor == 'F') {
-            Node* temp = raiz->right;
-            free(raiz);
-            return temp;
-        }
-        if (raiz->right->valor == 'F') {
-            Node* temp = raiz->left;
-            free(raiz);
-            return temp;
-        }
+        if (raiz->left->valor == 'F') return raiz->right;
+        if (raiz->right->valor == 'F') return raiz->left;
         if (raiz->left->valor == 'T' || raiz->right->valor == 'T') {
             free(raiz);
             return create_node('T', NULL, NULL);
@@ -171,14 +158,9 @@ void imprimir(Node* raiz) {
 
 // Função principal
 int main() {
-    char expression[MAX_EXPRESSION];
-    int aux_pointer = 0;
-
-    // Leitura da expressão de entrada
-    scanf("%s", expression);
-
     // Construir a árvore da expressão
-    Node* raiz = build_tree(expression, &aux_pointer);
+    
+    Node* raiz = build_tree();
 
     // Imprimir a expressão original
     imprimir(raiz);
