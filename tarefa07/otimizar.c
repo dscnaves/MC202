@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-<<<<<<< HEAD
-=======
 #define MAX_EXPRESSION 1000
->>>>>>> 66001227737dcf563a3f20132d3168a68fc4c498
 
 // Definição da estrutura de nó da árvore
 typedef struct Node {
@@ -20,7 +17,7 @@ Node* create_node(char valor, Node* left, Node* right) {
     new_node->valor = valor;
     return new_node;
 }
-void Liberar(Node* raiz);
+
 // Função para verificar se um caractere é uma variável (letra minúscula)
 int is_lower(char c) {
     return (c >= 'a' && c <= 'z');
@@ -56,28 +53,22 @@ Node* simplificar_negacao(Node* raiz) {
     if (raiz->valor == '!') {
         Node* son = raiz->left;
 
-        if (son->valor == '|' || son->valor == '&') {
+        if (son->valor == '|') {
             Node* not_left = create_node('!', simplificar_negacao(son->left), NULL);
             Node* not_right = create_node('!', simplificar_negacao(son->right), NULL);
-            Node* aux = raiz;
-            if (son->valor == '|'){
-                raiz = create_node('&', not_left, not_right);
-            }
-            else{
-                raiz = create_node('|', not_left, not_right);
-            }
-            free(aux);
-        }
-        else if (son->valor == '!') {
-            Node* aux = raiz;
+            raiz = create_node('&', not_left, not_right);
+        } else if (son->valor == '&') {
+            Node* not_left = create_node('!', simplificar_negacao(son->left), NULL);
+            Node* not_right = create_node('!', simplificar_negacao(son->right), NULL);
+            raiz = create_node('|', not_left, not_right);
+        } else if (son->valor == '!') {
             raiz = simplificar_negacao(son->left);
-            free(aux);
         }
     }
-    raiz->left = simplificar_negacao(raiz->left);
 
+    raiz->left = simplificar_negacao(raiz->left);
     raiz->right = simplificar_negacao(raiz->right);
-    
+
     return raiz;
 }
 
@@ -165,22 +156,10 @@ void imprimir(Node* raiz) {
     }
 }
 
-
-void Liberar(Node* raiz) {
-    if (raiz) {
-        Liberar(raiz->left);
-        Liberar(raiz->right);
-        free(raiz);
-    }
-}
-
 // Função principal
 int main() {
     // Construir a árvore da expressão
-<<<<<<< HEAD
     
-=======
->>>>>>> 66001227737dcf563a3f20132d3168a68fc4c498
     Node* raiz = build_tree();
 
     // Imprimir a expressão original
@@ -202,7 +181,7 @@ int main() {
     printf("\n");
 
     // Liberar memória
-    Liberar(raiz);
+    free(raiz);
 
     return 0;
 }
