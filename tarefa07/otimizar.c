@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_EXPRESSION 1000
-
 // Definição da estrutura de nó da árvore
 typedef struct Node {
     char valor;
@@ -138,6 +136,14 @@ Node* simplificar(Node* raiz) {
     return raiz;
 }
 
+// Função para liberar a memória da árvore
+void liberar_arvore(Node* raiz) {
+    if (raiz == NULL) return;
+    liberar_arvore(raiz->left);  // Liberar subárvore esquerda
+    liberar_arvore(raiz->right); // Liberar subárvore direita
+    free(raiz);  // Liberar o nó atual
+}
+
 // Função para imprimir a expressão a partir da árvore
 void imprimir(Node* raiz) {
     if (raiz == NULL) return;
@@ -159,7 +165,6 @@ void imprimir(Node* raiz) {
 // Função principal
 int main() {
     // Construir a árvore da expressão
-    
     Node* raiz = build_tree();
 
     // Imprimir a expressão original
@@ -180,8 +185,8 @@ int main() {
     imprimir(simplificada);
     printf("\n");
 
-    // Liberar memória
-    free(raiz);
+    // Liberar memória da árvore ao final do programa
+    liberar_arvore(simplificada);
 
     return 0;
 }
