@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_OBJECTS 100000
-
 // Função para alocar e inicializar a estrutura de próximos acessos
 int* next_access_initialize(int num_objects, int length) {
     //O array chamado next_access é usado para para armazenar quando cada objeto será acessado novamente
@@ -49,8 +47,6 @@ void calcular_proximos_acessos(int sequence[], int length, int **future_access, 
     }
 }
 
-
-
 // Função de simulação de cache
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
@@ -60,8 +56,35 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
     int *next_access = next_access_initialize(num_objects, length);
 
+    int **future_access = future_access_initialize(num_objects, length);
+    int *contador_acessos = (int *)calloc(num_objects, sizeof(int));
 
- 
+
+    calcular_proximos_acessos(sequence, length, future_access, contador_acessos, num_objects);
+
+
+    // Fazer Cache
+    for (int i = 0; i < length; i++) {
+        int current_object = sequence[i];
+
+
+        // Atualiza o próximo acesso
+        if (contador_acessos[current_object] > 0) {
+            contador_acessos[current_object]--;
+        }
+        next_access[current_object] = (contador_acessos[current_object] == 0) ? length : future_access[current_object][contador_acessos[current_object] - 1];
+
+
+        int found_in_cache = 0;
+        for (int j = 0; j < cache_count; j++) {
+            if (cache[j] == current_object) {
+                found_in_cache = 1;
+                break;
+            }
+        }
+
+
+    }
 }
 
 int main() {
