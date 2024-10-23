@@ -133,7 +133,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
         free(cache);
         free(next_access);
-        future_access_initiazile(future_access, num_objects);
+        future_access_free(future_access, num_objects);
         free(contador_acessos);
 
         return insercoes;
