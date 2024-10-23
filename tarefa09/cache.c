@@ -15,6 +15,7 @@ int* next_access_initialize(int num_objects, int length) {
     return next_access;
 }
 
+// Função para alocar e inicializar os acessos futuros
 int** future_access_initialize(int num_objects, int length) {
     //A matriz chamada future_access é aquela onde cada linha corresponde a um objeto, e cada linha armazena as posições na sequência em que esse objeto será acessado no futuro
 
@@ -26,6 +27,7 @@ int** future_access_initialize(int num_objects, int length) {
     return future_access;
 }
 
+// Função para liberar a memória de acessos futuros
 void future_access_free(int **future_access, int num_objects) {
     for (int i = 0; i < num_objects; i++) {
         free(future_access[i]);
@@ -33,6 +35,7 @@ void future_access_free(int **future_access, int num_objects) {
     free(future_access);
 }
 
+// Função para pré-processar a sequência e calcular os próximos acessos
 void calcular_proximos_acessos(int sequence[], int length, int **future_access, int *contador_acessos, int num_objects) {
     //Essa função preenche a matriz future_acess
 
