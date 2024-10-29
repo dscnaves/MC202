@@ -78,23 +78,30 @@ void insert_city(Quad_tree * node, int x, int y, char * p_city_name) {
     }
 }
 
-City * search_city(Quad_tree * node, int x ,int y){
-    //Caso base: Encontrou a cidade (coordenadas bateiram) => retorna o endereço da cidade
-    if (node->city != NULL && node->city->x == x && node->city->y == y){
-        return node->city;
+CityInfo * search_city(Quad_tree *node, int x, int y) {
+    // Aloca um espaço temporário para armazenar o resultado da busca
+    static CityInfo found_city;  // Usando static para persistir o valor entre chamadas
+
+    // Caso base: Encontrou a cidade com as coordenadas exatas
+    if (node->city != NULL && node->city->x == x && node->city->y == y) {
+        found_city.x = node->city->x;
+        found_city.y = node->city->y;
+        strncpy(found_city.name, node->city->name, MAX_LEN_CITY);
+        return &found_city;
     }
 
-    //Se não encontrou procure no próximo quadrande onde a cidade pode estar
+    // Caso recursivo: Busca no quadrante apropriado
     int mid_x = (node->x_min + node->x_max) / 2;
     int mid_y = (node->y_min + node->y_max) / 2;
     int quadrant = which_quadrant(x, y, mid_x, mid_y);
 
-    if (node->children[quadrant] != NULL){//Se o quadrante existe, procure dentro dele
+    if (node->children[quadrant] != NULL) {
         return search_city(node->children[quadrant], x, y);
     }
 
-    return NULL; //Fomos até o final da árvore e não foi encontrado
+    return NULL;  // Cidade não encontrada
 }
+
 
 void remove_city(Quad_tree *node, int x, int y){
     //Caso base: Chegamos a um nó folha ocupada e removemos a cidade
@@ -206,41 +213,42 @@ void free_quad_tree(Quad_tree * node){
     free(node);
 }
 
-int main(){
-    int size; //lado quadrado que representa o mapa
-    scanf("%d",&size);
+int main() {
+    int size;
+    scanf("%d", &size);
 
-    //Inicializando a árvore
-    Quad_tree * root = initialize_tree(0,size,0,size);
+    Quad_tree *root = initialize_tree(0, size, 0, size);
+    int running = 1;  // Variável de controle para manter o loop rodando => Condição de parada explicita do enunciado
 
-    char command[1];
-    while (1) {
+    while (running) {
+        char command[2];
         scanf("%s", command);
 
-        //Inserção
-        if (strcmp(command, "i") == 0){
+        // Inserção
+        if (strcmp(command, "i") == 0) {
             int x, y;
             char city_name[MAX_LEN_CITY];
             scanf("%d %d %s", &x, &y, city_name);
-
-            insert_city(root,x,y,city_name);
+            insert_city(root, x, y, city_name);
         }
 
-        //Busca por ponto
-        else if (strcmp(command, "b") == 0){
+        // Busca por ponto
+        else if (strcmp(command, "b") == 0) {
             int x, y;
             scanf("%d %d", &x, &y);
-            City *city = search_city(root, x, y);
+            CityInfo *city = search_city(root, x, y);
 
             if (city != NULL) {
                 printf("Cidade %s encontrada no ponto (%d,%d).\n", city->name, city->x, city->y);
-            } else {
+            }
+            else {
                 printf("Nenhuma cidade encontrada no ponto (%d,%d).\n", x, y);
             }
         }
 
-        //Busca por região
-        else if (strcmp(command, "o") == 0){
+
+        // Busca por região
+        else if (strcmp(command, "o") == 0) {
             int x, y, r;
             scanf("%d %d %d", &x, &y, &r);
             printf("Cidades a distancia %d de (%d,%d): ", r, x, y);
@@ -248,25 +256,27 @@ int main(){
             printf("\n");
         }
 
-        //Remoção
-        else if (strcmp(command, "r") == 0){
+        // Remoção
+        else if (strcmp(command, "r") == 0) {
             int x, y;
             scanf("%d %d", &x, &y);
             remove_city(root, x, y);
         }
 
-        //Impressão
+        // Impressão
         else if (strcmp(command, "p") == 0) {
             printf("Árvore:\n");
             int depth = 1;
             print_tree(root, depth);
         }
-        //Sair
-        else if (strcmp(command, "s") == 0){
+
+        // Encerrar o sistema
+        else if (strcmp(command, "s") == 0) {
             printf("Sistema encerrado.\n");
             free_quad_tree(root);
-            break;
-        } 
+            running = 0;  // Define running como 0 para sair do loop
+        }
     }
+
     return 0;
 }
