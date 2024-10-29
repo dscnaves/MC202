@@ -3,6 +3,12 @@
 
 #define MAX_LEN_CITY 11
 
+typedef enum {
+    LEAF_EMPTY,
+    LEAF_OCCUPIED,
+    INTERNAL
+} NodeType;
+
 // Estrutura para armazenar dados da cidade
 typedef struct City {
     int x, y;
@@ -14,14 +20,15 @@ typedef struct Quad_tree {
     int x_min, x_max, y_min, y_max;
     struct Quad_tree *children[4];
     City *city;
+    NodeType type;  // Campo de enumeração para o tipo do nó
 } Quad_tree;
+
 
 //Estrutura contém apenas as informações da cidade, sem a referência ao nó => Consertar problema de segurança
 typedef struct CityInfo {
     int x, y;
     char name[MAX_LEN_CITY];
 } CityInfo;
-
 
 // Funções de inicialização e liberação
 Quad_tree *initialize_tree(int x_min, int x_max, int y_min, int y_max);
