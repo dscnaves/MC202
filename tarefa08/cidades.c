@@ -1,19 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX_LEN_CITY 11
-
-typedef struct City {
-    int x,y;
-    char name[MAX_LEN_CITY];
-} City;
-
-typedef struct Quad_tree{
-    int x_min, x_max, y_min, y_max;
-    struct Quad_tree * children[4];
-    City * city;
-} Quad_tree;
+#include "cidades.h"
 
 Quad_tree * initialize_tree(int x_min, int x_max, int y_min, int y_max){
     Quad_tree * p_node = malloc(sizeof(Quad_tree));
