@@ -70,6 +70,35 @@ int search_Node_HashTable(Node * hashtable[], char * word){
     return 0;
 }
 
+int red_or_yellow(const char *term, const char *word){
+    int term_len = strlen(term), word_len = strlen(word);
+
+    if (abs(term_len - word_len) > 1) return VERMELHO;
+
+    int edits = 0;
+    int i = 0, j = 0;
+
+    while(i < term_len && j < word_len){
+        //Se os caracteres forem igual, continue comparando
+        if (term[i] == word[j]) {i++; j++;}      
+
+        //Se forem diferentes
+        else if (term[i] != word[j]){
+            //Incrementar número de edições
+            if (++edits > 1) return VERMELHO; //Se o número de edições superar 1 => VERMELHO
+
+            //Se as palavras tirem uma diferença de tamanho, ajuste para que possamos comparar o próximo caracter
+            if (term_len > word_len) i++; //Caso em que inserimos um caracter
+            else if (term_len < word_len) j++; ////Caso em que removemos um caracter
+
+            //Se não houber diferença no tamanho, continue comparando => Caso de troca ou combinação de remoções e de inserções
+            else {i++; j++;}
+        }
+        //Palavra passou por todas as comparações e o número de edits não superou 1 => AMARELO
+        return AMARELO;
+    }
+}
+
 int main(){
     int m, n; //o número de palavras no dicionário e o número de palavras do texto
     scanf("%d %d", &m, &n);
@@ -107,7 +136,7 @@ int main(){
         }
 
         //Classificação entre VERMELHO E AMARELO
-        
+
     }
     
 
