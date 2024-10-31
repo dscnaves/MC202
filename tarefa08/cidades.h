@@ -1,34 +1,33 @@
 #ifndef CIDADES_H
 #define CIDADES_H
 
-#define MAX_LEN_CITY 11
+#define MAX_LEN_CITY 100
 
-typedef enum {
-    LEAF_EMPTY,
-    LEAF_OCCUPIED,
-    INTERNAL
-} NodeType;
-
-// Estrutura para armazenar dados da cidade
+// Estrutura para armazenar informações de uma cidade
 typedef struct City {
-    int x, y;
+    int x;
+    int y;
     char name[MAX_LEN_CITY];
 } City;
 
-// Estrutura para o nó da árvore quaternária
+// Estrutura para a árvore quaternária, contendo limites e filhos
 typedef struct Quad_tree {
-    int x_min, x_max, y_min, y_max;
+    int x_min;
+    int x_max;
+    int y_min;
+    int y_max;
     struct Quad_tree *children[4];
     City *city;
-    NodeType type;  // Campo de enumeração para o tipo do nó
 } Quad_tree;
 
-
-//Estrutura contém apenas as informações da cidade, sem a referência ao nó => Consertar problema de segurança
+// Estrutura para informações da cidade ao buscar
 typedef struct CityInfo {
-    int x, y;
+    int x;
+    int y;
     char name[MAX_LEN_CITY];
 } CityInfo;
+
+// Funções públicas
 
 // Funções de inicialização e liberação
 Quad_tree *initialize_tree(int x_min, int x_max, int y_min, int y_max);
