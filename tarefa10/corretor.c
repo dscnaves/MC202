@@ -4,11 +4,19 @@
 
 #define MAX_SIZE_WORD 26
 #define MAX_SIZE_HASH_TABLE 100
+#define MAX_SIZE_COLOR 9
 
 typedef struct HashTableNode{
     char word[MAX_SIZE_WORD];
     struct HashTableNode * p_next;
 } Node;
+
+// Definindo o enum para as cores
+typedef enum {
+    VERMELHO,
+    AMARELO,
+    VERDE
+} Color;
 
 void initialize_HashTable(Node * hashtable[]){
     for (int i = 0; i<MAX_SIZE_HASH_TABLE; i++){
@@ -49,6 +57,19 @@ void insert_Node_HashTable(Node * hashtable[], Node * new_HashNode, unsigned int
     return;
 }
 
+int search_Node_HashTable(Node * hashtable[], char * word){
+    unsigned int index = hash(word);
+    Node * p_current = hashtable[index];
+
+    while (p_current != NULL){
+        if (strcmp(p_current->word, word) == 0){
+            return 1;
+        }
+        p_current = p_current->p_next;
+    }
+    return 0;
+}
+
 int main(){
     int m, n; //o número de palavras no dicionário e o número de palavras do texto
     scanf("%d %d", &m, &n);
@@ -63,10 +84,32 @@ int main(){
         scanf("%s", word);
 
         Node * new_HashNode = create_Node_HashTable(word);
+        if (new_HashNode == NULL){
+            printf("Erro ao alocar memória no nó.\n");
+            exit(1);
+        }
 
         unsigned int index = hash(word);
         insert_Node_HashTable(hashtable, new_HashNode, index);
     }
+
+    //Classificação das palavras
+    for (int i = 0; i<n; i++){
+        //Leitura do termo
+        char term[MAX_SIZE_WORD];
+        scanf("%s", term);
+        int color;
+
+        //Busca da palavra na hashtable
+        int is_hashtable = search_Node_HashTable(hashtable,&term);
+        if (is_hashtable){
+            color = VERDE;
+        }
+
+        //Classificação entre VERMELHO E AMARELO
+        
+    }
+    
 
 
     return 0;
