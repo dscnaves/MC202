@@ -94,9 +94,9 @@ int red_or_yellow(const char *term, const char *word){
             //Se não houber diferença no tamanho, continue comparando => Caso de troca ou combinação de remoções e de inserções
             else {i++; j++;}
         }
-        //Palavra passou por todas as comparações e o número de edits não superou 1 => AMARELO
-        return AMARELO;
     }
+    //Palavra passou por todas as comparações e o número de edits não superou 1 => AMARELO
+    return AMARELO;
 }
 
 int main(){
@@ -130,18 +130,18 @@ int main(){
         int color;
 
         //Busca da palavra na hashtable => Classificação VERDE
-        int is_hashtable = search_Node_HashTable(hashtable,&term);
+        int is_hashtable = search_Node_HashTable(hashtable,term);
         if (is_hashtable){
             color = VERDE;
             printf("%s: verde", term);
         }
 
         //Classificação entre VERMELHO E AMARELO
-        int index_term = hash(&term);
+        int index_term = hash(term);
 
         Node * p_current = hashtable[index_term];
         while ( p_current != NULL){
-            color = red_or_yellow(&term, &p_current->word);
+            color = red_or_yellow(term,p_current->word);
 
             if (color == AMARELO){
                 printf("%s: amarelo", term);
