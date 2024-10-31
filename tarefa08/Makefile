@@ -1,21 +1,19 @@
-CC = gcc
 CFLAGS = -std=c99 -Wall -Werror -Wvla -g
 LDFLAGS = -lm
-TARGET = cidades
-OBJS = cidades.o cidades_tad.o
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: cidades
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
+cidades: cidades.o cidades_tad.o
+	
+	gcc $(CFLAGS) cidades.o cidades_tad.o -o cidades $(LDFLAGS)
 
 cidades.o: cidades.c cidades.h
-	$(CC) $(CFLAGS) -c cidades.c
+	gcc $(CFLAGS) -c cidades.c
 
 cidades_tad.o: cidades_tad.c cidades.h
-	$(CC) $(CFLAGS) -c cidades_tad.c
+	gcc $(CFLAGS) -c cidades_tad.c
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f cidades *.o
