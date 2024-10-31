@@ -108,7 +108,7 @@ int main(){
     initialize_HashTable(hashtable);
 
     //Construindo a Tabela de Dispersão
-    for (int i = 0; i<m; i++){
+    for (int x = 0; x<m; x++){
         char word[MAX_SIZE_WORD];
         scanf("%s", word);
 
@@ -123,20 +123,36 @@ int main(){
     }
 
     //Classificação das palavras
-    for (int i = 0; i<n; i++){
+    for (int x = 0; x<n; x++){
         //Leitura do termo
         char term[MAX_SIZE_WORD];
         scanf("%s", term);
         int color;
 
-        //Busca da palavra na hashtable
+        //Busca da palavra na hashtable => Classificação VERDE
         int is_hashtable = search_Node_HashTable(hashtable,&term);
         if (is_hashtable){
             color = VERDE;
+            printf("%s: verde", term);
         }
 
         //Classificação entre VERMELHO E AMARELO
+        int index_term = hash(&term);
 
+        Node * p_current = hashtable[index_term];
+        while ( p_current != NULL){
+            color = red_or_yellow(&term, &p_current->word);
+
+            if (color == AMARELO){
+                printf("%s: amarelo", term);
+                break;
+            }
+            p_current = p_current->p_next;
+        }
+        if (color == VERMELHO){
+            printf("%s: vermelho", term);
+        }
+        
     }
     
 
