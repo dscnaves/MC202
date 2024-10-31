@@ -133,29 +133,31 @@ int main(){
         int is_hashtable = search_Node_HashTable(hashtable,term);
         if (is_hashtable){
             color = VERDE;
-            printf("%s: verde", term);
+            printf("%s: verde\n", term);
         }
+        else {
+            //Classificação entre VERMELHO E AMARELO
+            int index_term = hash(term);
 
-        //Classificação entre VERMELHO E AMARELO
-        int index_term = hash(term);
+            Node * p_current = hashtable[index_term];
+            
+            int found = 0;
+            while (p_current != NULL){
+                color = red_or_yellow(term, p_current->word);
 
-        Node * p_current = hashtable[index_term];
-        while ( p_current != NULL){
-            color = red_or_yellow(term,p_current->word);
-
-            if (color == AMARELO){
-                printf("%s: amarelo", term);
-                break;
+                if (color == AMARELO){
+                    printf("%s: amarelo\n", term);
+                    found = 1;
+                    break;  // Encerra a busca, pois a palavra é "amarelo"
+                }
+                p_current = p_current->p_next;
             }
-            p_current = p_current->p_next;
+            if (!found) {  // Se "amarelo" não foi encontrado, então é "vermelho"
+                printf("%s: vermelho\n", term);
+            }       
         }
-        if (color == VERMELHO){
-            printf("%s: vermelho", term);
-        }
-        
     }
-    
-
+        
 
     return 0;
 }
