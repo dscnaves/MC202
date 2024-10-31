@@ -18,7 +18,7 @@ void initialize_HashTable(Node * hashtable[]){
 
 Node * create_Node_HashTable(char word[]){
     //Alocando espaço para o nó
-    Node * New_HashNode = malloc(sizeof(Node*));
+    Node * New_HashNode = malloc(sizeof(Node));
 
     //Receber valores inicializando
     strncpy(New_HashNode->word,word,MAX_SIZE_WORD);
@@ -38,8 +38,8 @@ unsigned int hash(const char * p_word){
 
 void insert_Node_HashTable(Node * hashtable[], Node * new_HashNode, unsigned int index){
     //Se não houber colisão
-    if (hashtable[index]->p_next == NULL){
-        hashtable[index]->p_next = new_HashNode;
+    if (hashtable[index] == NULL){
+        hashtable[index] = new_HashNode;
         return;
     }
 
