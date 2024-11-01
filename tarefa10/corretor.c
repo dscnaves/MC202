@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_SIZE_WORD 26
 #define MAX_SIZE_HASH_TABLE 100
@@ -109,6 +110,33 @@ int red_or_yellow(const char *term, const char *word){
     return AMARELO;
 }
 
+// Função para gerar todas as variações de `term` e armazená-las em `variations`
+void generate_variations(const char *term, char variations[][MAX_SIZE_WORD], int *variation_count) {
+    int term_len = strlen(term);
+    *variation_count = 0;
+
+    // Gerando variações com inserção de caracteres
+    for (int i = 0; i <= term_len; i++) { // Posições de inserção
+        for (char c = 'a'; c <= 'z'; c++) { // Cada caractere do alfabeto
+            char new_word[MAX_SIZE_WORD] = {0};
+            strncpy(new_word, term, i); // Copia os primeiros i caracteres de term
+            new_word[i] = c; // Insere o novo caractere
+            strncpy(new_word + i + 1, term + i, term_len - i); // Copia o restante de term
+            strncpy(variations[*variation_count], new_word, MAX_SIZE_WORD);
+            (*variation_count)++;
+        }
+    }
+
+    // Gerando variações com remoção de caracteres
+    for (int i = 0; i < term_len; i++) {
+        char new_word[MAX_SIZE_WORD] = {0};
+        strncpy(new_word, term, i); // Copia os primeiros i caracteres de term
+        strncpy(new_word + i, term + i + 1, term_len - i - 1); // Pula o caractere em i e copia o restante
+        strncpy(variations[*variation_count], new_word, MAX_SIZE_WORD);
+        (*variation_count)++;
+    }
+}
+
 int main(){
     int m, n; //o número de palavras no dicionário e o número de palavras do texto
     scanf("%d %d", &m, &n);
@@ -136,30 +164,49 @@ int main(){
         if (is_hashtable){
             printf("%s: verde\n", term);
         }
-        else {
-            //Classificação entre VERMELHO E AMARELO
-            int index_term = hash(term);
+        //Classificação AMARELO ou VERMELHO
+        char variations[MAX_SIZE_WORD+1][MAX_SIZE_WORD];
+        int variation_count = 0;
 
-            Node * p_current = hashtable[index_term];
-            
-            int found = 0;
+        generate_variations(term, variations, &variation_count);
 
-            for (int y = 0; y<MAX_SIZE_HASH_TABLE; y++){
-                p_current = hashtable[y];
-                while (p_current != NULL){
-                    if (red_or_yellow(term, p_current->word) == AMARELO){
-                        printf("%s: amarelo\n", term);
-                        found = 1;
-                        break;
-                    }
-                    p_current = p_current->p_next;
-                }
-                if (found) break;
-            }
-            if (!found) {
-                printf("%s: vermelho\n", term);
+        int found = 0;
+        for (int i = 0; i < variation_count; i++) {
+            if (search_Node_HashTable(hashtable, variations[i])){
+                found = 1;
+                printf("%s: amarelo\n", term);
+                break;
             }
         }
+        if (!found) printf("%s: vermelho\n", term);
+
+
+
+
+        // else {
+        //     //Classificação entre VERMELHO E AMARELO
+        //     int index_term = hash(term);
+
+        //     Node * p_current = hashtable[index_term];
+            
+        //     int found = 0;
+
+        //     for (int y = 0; y<MAX_SIZE_HASH_TABLE; y++){
+        //         p_current = hashtable[y];
+        //         while (p_current != NULL){
+        //             if (red_or_yellow(term, p_current->word) == AMARELO){
+        //                 printf("%s: amarelo\n", term);
+        //                 found = 1;
+        //                 break;
+        //             }
+        //             p_current = p_current->p_next;
+        //         }
+        //         if (found) break;
+        //     }
+        //     if (!found) {
+        //         printf("%s: vermelho\n", term);
+        //     }
+        // }
     }
         
 
