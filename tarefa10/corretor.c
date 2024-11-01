@@ -130,12 +130,10 @@ int main(){
         //Leitura do termo
         char term[MAX_SIZE_WORD];
         scanf("%s", term);
-        int color;
 
         //Busca da palavra na hashtable => Classificação VERDE
         int is_hashtable = search_Node_HashTable(hashtable,term);
         if (is_hashtable){
-            color = VERDE;
             printf("%s: verde\n", term);
         }
         else {
@@ -146,8 +144,21 @@ int main(){
             
             int found = 0;
 
-            for (int y = 0; y<)
-
+            for (int y = 0; y<MAX_SIZE_HASH_TABLE; y++){
+                p_current = hashtable[y];
+                while (p_current != NULL){
+                    if (red_or_yellow(term, p_current->word) == AMARELO){
+                        printf("%s: amarelo\n", term);
+                        found = 1;
+                        break;
+                    }
+                    p_current = p_current->p_next;
+                }
+                if (found) break;
+            }
+            if (!found) {
+                printf("%s: vermelho\n", term);
+            }
         }
     }
         
