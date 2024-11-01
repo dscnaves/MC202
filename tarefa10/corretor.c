@@ -152,12 +152,22 @@ VariationsHashes generate_variations_with_hashes(const char *term) {
 
         if (current_hash < result.min_hash) result.min_hash = current_hash;
         if (current_hash > result.max_hash) result.max_hash = current_hash;
-        
+
         result.variation_count++;
     }
     return result;
 }
 
+void free_HashTable(Node *hashtable[]) {
+    for (int i = 0; i < MAX_SIZE_HASH_TABLE; i++) {
+        Node *p_current = hashtable[i];
+        while (p_current != NULL) {
+            Node *temp = p_current;
+            p_current = p_current->p_next;
+            free(temp);
+        }
+    }
+}
 
 int main() {
     int m, n;
@@ -185,5 +195,9 @@ int main() {
         VariationsHashes variations_hashes = generate_variations_with_hashes(term);
         search_within_hash_range(hashtable, term, variations_hashes.min_hash, variations_hashes.max_hash);
     }
+
+    // Liberar memória alocada
+    free_HashTable(hashtable);
+
     return 0;
 }
