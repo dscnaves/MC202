@@ -27,6 +27,10 @@ void initialize_HashTable(Node * hashtable[]){
 Node * create_Node_HashTable(char word[]){
     //Alocando espaço para o nó
     Node * New_HashNode = malloc(sizeof(Node));
+    if (New_HashNode == NULL){
+        printf("Erro ao alocar memória no nó.\n");
+        exit(1);
+    }
 
     //Receber valores inicializando
     strncpy(New_HashNode->word,word,MAX_SIZE_WORD);
@@ -44,7 +48,13 @@ unsigned int hash(const char * p_word){
     return hash;
 }
 
-void insert_Node_HashTable(Node * hashtable[], Node * new_HashNode, unsigned int index){
+void insert_Node_HashTable(Node * hashtable[], char word[]){
+    //Alocando o nó a ser inserido
+    Node * new_HashNode = create_Node_HashTable(word);
+    //Calculando o indice onde o a palavra deve ser inserida
+    unsigned int index = hash(word);
+
+    
     //Se não houber colisão
     if (hashtable[index] == NULL){
         hashtable[index] = new_HashNode;
@@ -112,14 +122,7 @@ int main(){
         char word[MAX_SIZE_WORD];
         scanf("%s", word);
 
-        Node * new_HashNode = create_Node_HashTable(word);
-        if (new_HashNode == NULL){
-            printf("Erro ao alocar memória no nó.\n");
-            exit(1);
-        }
-
-        unsigned int index = hash(word);
-        insert_Node_HashTable(hashtable, new_HashNode, index);
+        insert_Node_HashTable(hashtable, word);
     }
 
     //Classificação das palavras
@@ -142,19 +145,9 @@ int main(){
             Node * p_current = hashtable[index_term];
             
             int found = 0;
-            while (p_current != NULL){
-                color = red_or_yellow(term, p_current->word);
 
-                if (color == AMARELO){
-                    printf("%s: amarelo\n", term);
-                    found = 1;
-                    break;  // Encerra a busca, pois a palavra é "amarelo"
-                }
-                p_current = p_current->p_next;
-            }
-            if (!found) {  // Se "amarelo" não foi encontrado, então é "vermelho"
-                printf("%s: vermelho\n", term);
-            }       
+            for (int y = 0; y<)
+
         }
     }
         
