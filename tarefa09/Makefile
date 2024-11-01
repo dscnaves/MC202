@@ -3,10 +3,17 @@ LDFLAGS = -lm
 
 .PHONY: all clean
 
-all: cache
+all: banco
 
-cache: cache.c
-	gcc $(CFLAGS) cache.c -o cache $(LDFLAGS)
+banco: cidades.o cidades_tad.o
+	
+	gcc $(CFLAGS) cidades.o cidades_tad.o -o cidades $(LDFLAGS)
+
+cidades.o: cidades.c cidades.h
+	gcc $(CFLAGS) -c cidades.c
+
+cidades_tad.o: cidades_tad.c cidades.h
+	gcc $(CFLAGS) -c cidades_tad.c
 
 clean:
-	rm -f cache
+	rm -f cidades *.o
