@@ -4,9 +4,14 @@
 
 #define MAX_SIZE_WORD 26
 
+typedef struct ListNode {
+    int access_index;
+    struct ListNode *next;
+} ListNode;
+
 typedef struct {
     int object;
-    int next_access;
+    int next_access; //Chave de prioridade
 } HeapNode;
 
 typedef struct {
@@ -45,30 +50,49 @@ void heapifyUp(MaxHeap *heap, int index) {
 
 // Função para manter a propriedade da heap ao remover o nó raiz
 void heapifyDown(MaxHeap *heap, int index) {
-    while (2 * index + 1 < heap->size) {
-        int child = 2 * index + 1;
-        if (child + 1 < heap->size && heap->nodes[child].next_access < heap->nodes[child + 1].next_access) {
-            child++;
+    int maior_filho;
+    int esquerda = 2 * index + 1;  // Índice do filho à esquerda
+    int direita = 2 * index + 2;   // Índice do filho à direita
+
+    // Enquanto houver um filho à esquerda (i.e., o nó tem pelo menos um filho)
+    while (esquerda < heap->size) {
+        // Assume inicialmente que o filho à esquerda é o maior
+        maior_filho = esquerda;
+
+        // Se o filho à direita existir e tiver um próximo acesso maior que o filho à esquerda
+        if (direita < heap->size && heap->nodes[direita].next_access > heap->nodes[esquerda].next_access) {
+            maior_filho = direita;
         }
-        if (heap->nodes[index].next_access >= heap->nodes[child].next_access) {
+
+        // Se o pai tiver um próximo acesso maior ou igual ao maior dos filhos, a propriedade da heap está mantida
+        if (heap->nodes[index].next_access >= heap->nodes[maior_filho].next_access) {
             break;
         }
-        swap(&heap->nodes[index], &heap->nodes[child]);
-        index = child;
+
+        // Caso contrário, troca o pai com o maior dos filhos
+        swap(&heap->nodes[index], &heap->nodes[maior_filho]);
+
+        // Atualiza o índice do pai e recalcula os índices dos filhos
+        index = maior_filho;
+        esquerda = 2 * index + 1;
+        direita = 2 * index + 2;
     }
 }
 
 // Função para inserir um nó na heap
 void insertHeap(MaxHeap *heap, int object, int next_access) {
+    //Se o heap tem espaço
     if (heap->size < heap->capacity) {
-        heap->nodes[heap->size].object = object;
-        heap->nodes[heap->size].next_access = next_access;
+        heap->nodes[heap->size].object = object; //Inserindo o objeto no heap no final
+        heap->nodes[heap->size].next_access = next_access; //Ajustando a prioridade desse objeto inserido
         heap->size++;
-        heapifyUp(heap, heap->size - 1);
-    } else if (next_access > heap->nodes[0].next_access) {
-        heap->nodes[0].object = object;
+        heapifyUp(heap, heap->size - 1); //Manutenção da escala de prioridade do heap
+    } 
+    //Se o heap está cheio
+    else if (next_access > heap->nodes[0].next_access) {
+        heap->nodes[0].object = object; //"Retira a raiz" que sempre tem a maior prioridade e inseri o objeto
         heap->nodes[0].next_access = next_access;
-        heapifyDown(heap, 0);
+        heapifyDown(heap, 0); //Manutenção da escala de prioridade do heap
     }
 }
 
@@ -90,28 +114,35 @@ int *next_access_initialize(int num_objects, int length) {
 }
 
 // Função para alocar e inicializar os acessos futuros
-int **future_access_initialize(int num_objects, int length) {
-    int **future_access = malloc(num_objects * sizeof(int *));
+ListNode **future_access_initialize(int num_objects) {
+    ListNode **future_access = malloc(num_objects * sizeof(ListNode *));
     for (int i = 0; i < num_objects; i++) {
-        future_access[i] = malloc(length * sizeof(int));
+        future_access[i] = NULL;
     }
     return future_access;
 }
 
 // Função para liberar a memória de acessos futuros
-void future_access_free(int **future_access, int num_objects) {
+void future_access_free(ListNode **future_access, int num_objects) {
     for (int i = 0; i < num_objects; i++) {
-        free(future_access[i]);
+        ListNode *current = future_access[i];
+        while (current != NULL) {
+            ListNode *temp = current;
+            current = current->next;
+            free(temp);
+        }
     }
     free(future_access);
 }
 
-// Função para preencher a matriz future_acess
-void calcular_proximos_acessos(int sequence[], int length, int **future_access, int *contador_acessos, int num_objects) {
+// Função para preencher a estrutura future_access
+void calcular_proximos_acessos(int sequence[], int length, ListNode **future_access, int num_objects) {
     for (int i = length - 1; i >= 0; i--) {
         int obj = sequence[i];
-        future_access[obj][contador_acessos[obj]] = i;
-        contador_acessos[obj]++;
+        ListNode *newNode = (ListNode *)malloc(sizeof(ListNode));
+        newNode->access_index = i;
+        newNode->next = future_access[obj];
+        future_access[obj] = newNode;
     }
 }
 
@@ -122,10 +153,9 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     int cache_count = 0;
 
     int *next_access = next_access_initialize(num_objects, length);
-    int **future_access = future_access_initialize(num_objects, length);
-    int *contador_acessos = (int *)calloc(num_objects, sizeof(int));
+    ListNode **future_access = future_access_initialize(num_objects);
 
-    calcular_proximos_acessos(sequence, length, future_access, contador_acessos, num_objects);
+    calcular_proximos_acessos(sequence, length, future_access, num_objects);
 
     MaxHeap *heap = createHeap(cache_size);
 
@@ -134,14 +164,16 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
         int current_object = sequence[i];
 
         // Atualiza o próximo acesso
-        if (contador_acessos[current_object] > 0) {
-            contador_acessos[current_object]--;
+        if (future_access[current_object] != NULL) {
+            ListNode *temp = future_access[current_object];
+            future_access[current_object] = future_access[current_object]->next;
+            free(temp);
         }
 
-        if (contador_acessos[current_object] == 0) {
+        if (future_access[current_object] == NULL) {
             next_access[current_object] = length; // Se não houver mais acessos futuros, define como fora do intervalo.
         } else {
-            next_access[current_object] = future_access[current_object][contador_acessos[current_object] - 1];
+            next_access[current_object] = future_access[current_object]->access_index;
         }
 
         // Verifica se o current_object já está no cache
@@ -179,7 +211,6 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     free(cache);
     free(next_access);
     future_access_free(future_access, num_objects);
-    free(contador_acessos);
     free(heap->nodes);
     free(heap);
 
