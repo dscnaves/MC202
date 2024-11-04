@@ -186,100 +186,95 @@ int * createCachePositions(int num_objects){
     return cache_positions;
 }
 
-// Função gerencia quais objetos serão mantidos no cache e quando será necessário remover um objeto
+// Função para atualizar o próximo acesso do objeto atual
+void atualizar_proximo_acesso(int current_object, int length, ListNode **future_access, int *next_access) {
+    // A função atualiza o próximo acesso do objeto removendo o nó atual da lista ligada future_access[i]
+    if (future_access[current_object] != NULL) {
+        ListNode *temp = future_access[current_object];
+        future_access[current_object] = future_access[current_object]->next;
+        free(temp);
+    }
+
+    if (future_access[current_object] == NULL) {
+        next_access[current_object] = length; // Se não houver mais acessos futuros, define como fora do intervalo.
+    } else {
+        next_access[current_object] = future_access[current_object]->access_index; // Caso contrário, o próximo acesso é atualizado para o índice do próximo nó na lista ligada
+    }
+}
+
+// Função para verificar se o objeto está no cache
+int verificar_objeto_no_cache(int current_object, int *cache_positions) {
+    // Verifica se o current_object já está no cache
+    return cache_positions[current_object] != -1;
+}
+
+// Função para inserir objeto no cache
+void inserir_no_cache(int current_object, int *cache, int *cache_count, int cache_size, MaxHeap *heap, int *cache_positions, int *heap_positions, int *next_access) {
+    // Se o cache estiver cheio => Remover um elemento
+    if (*cache_count >= cache_size) {
+        // Decidir qual objeto remover
+        HeapNode node = extractMax(heap, heap_positions);
+        
+        cache[cache_positions[node.object]] = current_object;
+
+        cache_positions[current_object] = cache_positions[node.object];
+        cache_positions[node.object] = -1;  
+    } else {
+        // Inserir objeto
+        cache[*cache_count] = current_object; // Inserir no cache
+        cache_positions[current_object] = *cache_count;
+        (*cache_count)++;
+    }       
+
+    insertHeap(heap, current_object, next_access[current_object], heap_positions); // Inserir na fila de prioridade
+}
+
+// Função principal para gerenciar o cache
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
 
-    //Alocando array para armazenar os objetos atualmente no cache
+    // Alocando array para armazenar os objetos atualmente no cache
     int *cache = (int *)malloc(cache_size * sizeof(int));
-    int cache_count = 0; //Mantém o número atual de objetos no cache e aponta para a próxima posição disponível para um novo objeto
+    int cache_count = 0; // Mantém o número atual de objetos no cache e aponta para a próxima posição disponível para um novo objeto
 
-    //Array que armazena o próximo acesso de cada objeto
+    // Array que armazena o próximo acesso de cada objeto
     int *next_access = next_access_initialize(num_objects, length);
-    //Um array de ponteiros para listas ligadas, onde cada lista representa os índices futuros de acesso para cada objeto
+    // Um array de ponteiros para listas ligadas, onde cada lista representa os índices futuros de acesso para cada objeto
     ListNode **future_access = future_access_initialize(num_objects);
-    
-    //Preenche future_access para cada objeto com todos os índices futuros em que ele será acessado
+
+    // Preenche future_access para cada objeto com todos os índices futuros em que ele será acessado
     calcular_proximos_acessos(sequence, length, future_access, num_objects);
 
     MaxHeap *heap = createHeap(cache_size);
 
-    int * cache_positions = createCachePositions(num_objects);
+    int *cache_positions = createCachePositions(num_objects);
 
-    int * heap_positions = malloc(num_objects*(sizeof(int*)));
+    int *heap_positions = malloc(num_objects * sizeof(int*));
 
     // Processo de gerenciamento de cache:
 
-    //Loop Principal para Processar Cada Acesso
+    // Loop Principal para Processar Cada Acesso
     for (int i = 0; i < length; i++) {
         int current_object = sequence[i];
 
-        //A função atualiza o próximo acesso do objeto removendo o nó atual da lista ligada future_acess[i]
-        if (future_access[current_object] != NULL) {
-            ListNode *temp = future_access[current_object];
-            future_access[current_object] = future_access[current_object]->next;
-            free(temp);
-        }
+        // Atualização do próximo acesso do objeto atual
+        atualizar_proximo_acesso(current_object, length, future_access, next_access);
 
-        if (future_access[current_object] == NULL) {
-            next_access[current_object] = length; // Se não houver mais acessos futuros, define como fora do intervalo.
-        } else { //Caso contrário, o próximo acesso é atualizado para o índice do próximo nó na lista ligada
-            next_access[current_object] = future_access[current_object]->access_index;
-        }
-
-        // Verifica se o current_object já está no cache
-        int found_in_cache = 0;
-        if (cache_positions[current_object] != -1){
-            found_in_cache = 1;
-        }
-        
+        // Verificação se o objeto já está no cache
+        int found_in_cache = verificar_objeto_no_cache(current_object, cache_positions);
 
         // Se o objeto não estiver no cache => Inseri-lo
         if (!found_in_cache) {
-
-            if (cache_count >= cache_size) { //Se o cache estiver cheio => Remover um elemento
-                // Decidir qual objeto remover
-                HeapNode node = extractMax(heap,heap_positions);
-                
-                cache[cache_positions[node.object]] = current_object;
-
-                cache_positions[current_object] = cache_positions[node.object];
-                cache_positions[node.object] = -1;                         
-            }
-            else {
-                //Inserir objeto
-                cache[cache_count] = current_object; //Inserir no cache
-                cache_positions[current_object] = cache_count;
-                cache_count++;
-            }       
-
-            insertHeap(heap, current_object, next_access[current_object],heap_positions); //Inserir na fila de prioridade
-
-            //Incrementa número de inserções
+            inserir_no_cache(current_object, cache, &cache_count, cache_size, heap, cache_positions, heap_positions, next_access); // Inserir no cache
+            // Incrementa número de inserções
             insercoes++;
-            //printf("*");
-  
-        
-        } else { //Se o objeto estiver no cache => Ajustar fila de prioridades 
-            //printf(" ");
-           update_heap_priority(heap,current_object,next_access[current_object],heap_positions);
-
-            
+        } else {
+            // Se o objeto estiver no cache => Ajustar fila de prioridades 
+            update_heap_priority(heap, current_object, next_access[current_object], heap_positions);
         }
- 
-        // printf("%2d | ", current_object);
-        // for(int k = 0; k < cache_count; k++){
-        //     printf("%2d, ", heap->nodes[k].object);
-        // }
-        // printf("\n "); 
-        // printf("%2d > ", next_access[current_object]);
-        // for(int k = 0; k < cache_count; k++){
-        //     printf("%2d, ", heap->nodes[k].next_access);
-        // }
-        // printf("\n");
-        // printf("\n");
     }
 
+    // Liberação da memória das estruturas de cache
     free(cache);
     free(next_access);
     future_access_free(future_access, num_objects);
@@ -290,8 +285,6 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
     return insercoes;
 }
-
-
 
 int main() {
     int cache_size, num_objects, sequence_length;
