@@ -284,6 +284,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     free(next_access);
     future_access_free(future_access, num_objects);
     free(cache_positions);
+    free(heap_positions);
     free(heap->nodes);
     free(heap);
 
