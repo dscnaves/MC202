@@ -12,6 +12,7 @@ typedef struct ListNode {
 typedef struct {
     int object;
     int next_access; //Chave de prioridade
+    int index_cache;
 } HeapNode;
 
 typedef struct {
@@ -171,6 +172,18 @@ void update_heap_priority(MaxHeap * heap, int object, int new_priority){
     return;
 }
 
+int * createCachePositions(int num_objects){
+    int *cache_positions = malloc(num_objects*sizeof(int *));
+    for(int g = 0; g<num_objects; g++){
+        cache_positions[g] = -1; //Objeto não está no cache
+    }
+    return cache_positions;
+}
+
+
+void set_cache_value(int * cache, int* cache_position, int index, int new_value){
+
+}
 // Função gerencia quais objetos serão mantidos no cache e quando será necessário remover um objeto
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
@@ -188,6 +201,8 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     calcular_proximos_acessos(sequence, length, future_access, num_objects);
 
     MaxHeap *heap = createHeap(cache_size);
+
+    int * cache_positions = createCachePositions(num_objects);
 
     // Processo de gerenciamento de cache:
 
@@ -210,34 +225,30 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
         // Verifica se o current_object já está no cache
         int found_in_cache = 0;
-        for (int j = 0; j < cache_count; j++) {
-            if (cache[j] == current_object) {
-                found_in_cache = 1;
-                break;
-            }
+        if (cache_positions[current_object] != -1){
+            found_in_cache = 1;
         }
+        
 
         // Se o objeto não estiver no cache => Inseri-lo
         if (!found_in_cache) {
 
-            if (cache_count >= cache_size) { // Se o cache estiver cheio => Remover um elemento
+            if (cache_count >= cache_size) { //Se o cache estiver cheio => Remover um elemento
                 // Decidir qual objeto remover
                 HeapNode node = extractMax(heap);
+                
+                cache[cache_positions[node.object]] = current_object;
 
-                //Manter o array cache compacto, sem lacunas, espaços vazios
-                for (int j = 0; j < cache_count; j++) { //Encontrar o índice do objeto node.object no array cache
-                    if (cache[j] == node.object) {
-                        for (int k = j; k < cache_count - 1; k++) {
-                            cache[k] = cache[k + 1];
-                        }
-                        cache_count--;
-                        break;
-                    }
-                }
+                cache_positions[current_object] = cache_positions[node.object];
+                cache_positions[node.object] = -1;                         
             }
-            
-            //Inserir objeto
-            cache[cache_count++] = current_object; //Inserir no cache
+            else {
+                //Inserir objeto
+                cache[cache_count] = current_object; //Inserir no cache
+                cache_positions[current_object] = cache_count;
+                cache_count++;
+            }       
+
             insertHeap(heap, current_object, next_access[current_object]); //Inserir na fila de prioridade
 
             //Incrementa número de inserções
@@ -247,12 +258,6 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
         
         } else { //Se o objeto estiver no cache => Ajustar fila de prioridades 
             //printf(" ");
-            /*
-            -> Posição heap
-            -> Atualizar prioridade
-            -> Atulizar a posição => heapup
-            */
-
            update_heap_priority(heap,current_object,next_access[current_object]);
 
             
@@ -299,3 +304,4 @@ int main() {
 
     return 0;
 }
+
