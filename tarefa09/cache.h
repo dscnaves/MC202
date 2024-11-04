@@ -1,22 +1,49 @@
-#ifndef CACHE_SIMULATION_H
-#define CACHE_SIMULATION_H
+#ifndef CACHE_H
+#define CACHE_H
 
-// Função para alocar e inicializar a estrutura de próximos acessos
-int* next_access_initialize(int num_objects, int length);
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Função para alocar e inicializar os acessos futuros
-int** future_access_initialize(int num_objects, int length);
+#define MAX_SIZE_WORD 26
 
-// Função para liberar a memória de acessos futuros
-void future_access_free(int **future_access, int num_objects);
+typedef struct ListNode {
+    int access_index;
+    struct ListNode *next;
+} ListNode;
 
-// Função que preenche a matriz future_access com os próximos acessos
-void calcular_proximos_acessos(int sequence[], int length, int **future_access, int *contador_acessos, int num_objects);
+typedef struct {
+    int object;
+    int next_access;
+    int index_cache;
+} HeapNode;
 
-// Função que determina qual objeto dentro do cache deve ser removido
-int encontrar_objeto_para_remover(int cache[], int cache_count, int next_access[]);
+typedef struct {
+    HeapNode *nodes;
+    int size;
+    int capacity;
+} MaxHeap;
 
-// Função que simula o gerenciamento de objetos no cache e retorna o número de inserções
+// Funções de manipulação da heap
+MaxHeap *createHeap(int capacity);
+void swap(HeapNode *a, HeapNode *b, int *heap_positions);
+void heapifyUp(MaxHeap *heap, int index, int *heap_positions);
+void heapifyDown(MaxHeap *heap, int index, int *heap_positions);
+void insertHeap(MaxHeap *heap, int object, int next_access, int *heap_positions);
+HeapNode extractMax(MaxHeap *heap, int *heap_positions);
+void update_heap_priority(MaxHeap *heap, int object, int new_priority, int *heap_positions);
+
+// Funções de manipulação de acessos futuros
+int *next_access_initialize(int num_objects, int length);
+ListNode **future_access_initialize(int num_objects);
+void future_access_free(ListNode **future_access, int num_objects);
+void calcular_proximos_acessos(int sequence[], int length, ListNode **future_access, int num_objects);
+void atualizar_proximo_acesso(int current_object, int length, ListNode **future_access, int *next_access);
+
+// Funções de manipulação do cache
+int *createCachePositions(int num_objects);
+int verificar_objeto_no_cache(int current_object, int *cache_positions);
+void inserir_no_cache(int current_object, int *cache, int *cache_count, int cache_size, MaxHeap *heap, int *cache_positions, int *heap_positions, int *next_access);
 int cache(int cache_size, int num_objects, int sequence[], int length);
 
-#endif
+#endif // CACHE_H
