@@ -31,26 +31,34 @@ MaxHeap *createHeap(int capacity) {
 }
 
 // Função para trocar dois nós na heap
-void swap(HeapNode *a, HeapNode *b) {
+void swap(HeapNode *a, HeapNode *b, int *heap_positions) {
+    int temp_obj_a = a->object;
+    int temp_obj_b = b->object; 
+
     HeapNode temp = *a;
     *a = *b;
     *b = temp;
+
+    // Atualiza as posições no array heap_positions
+    int temp_pos = heap_positions[temp_obj_a]; // Linha 39: Atualiza posições em heap_positions
+    heap_positions[temp_obj_a] = heap_positions[temp_obj_b];
+    heap_positions[temp_obj_b] = temp_pos;
 }
 
 // Função para manter a propriedade da heap ao inserir um novo nó
-void heapifyUp(MaxHeap *heap, int index) {
+void heapifyUp(MaxHeap *heap, int index, int *heap_positions) {
     while (index > 0) {
         int parent = (index - 1) / 2;
         if (heap->nodes[parent].next_access >= heap->nodes[index].next_access) {
             break;
         }
-        swap(&heap->nodes[parent], &heap->nodes[index]);
+        swap(&heap->nodes[parent], &heap->nodes[index],heap_positions);
         index = parent;
     }
 }
 
 // Função para manter a propriedade da heap ao remover o nó raiz
-void heapifyDown(MaxHeap *heap, int index) {
+void heapifyDown(MaxHeap *heap, int index, int * heap_positions) {
     int maior_filho;
     int esquerda = 2 * index + 1;  // Índice do filho à esquerda
     int direita = 2 * index + 2;   // Índice do filho à direita
@@ -71,7 +79,7 @@ void heapifyDown(MaxHeap *heap, int index) {
         }
 
         // Caso contrário, troca o pai com o maior dos filhos
-        swap(&heap->nodes[index], &heap->nodes[maior_filho]);
+        swap(&heap->nodes[index], &heap->nodes[maior_filho],heap_positions);
 
         // Atualiza o índice do pai e recalcula os índices dos filhos
         index = maior_filho;
@@ -81,27 +89,32 @@ void heapifyDown(MaxHeap *heap, int index) {
 }
 
 // Função para inserir um nó na heap
-void insertHeap(MaxHeap *heap, int object, int next_access) {
+void insertHeap(MaxHeap *heap, int object, int next_access, int * heap_positions) {
     //Se o heap tem espaço
     if (heap->size < heap->capacity) {
         heap->nodes[heap->size].object = object; //Inserindo o objeto no heap no final
         heap->nodes[heap->size].next_access = next_access; //Ajustando a prioridade desse objeto inserido
+        heap_positions[object] = heap->size;
         heap->size++;
-        heapifyUp(heap, heap->size - 1); //Manutenção da escala de prioridade do heap
+        heapifyUp(heap, heap->size - 1,heap_positions); //Manutenção da escala de prioridade do heap
     } 
     //Se o heap está cheio
     else if (next_access > heap->nodes[0].next_access) {
+        heap_positions[heap->nodes[0].object] = -1;
         heap->nodes[0].object = object; //"Retira a raiz" que sempre tem a maior prioridade e inseri o objeto
         heap->nodes[0].next_access = next_access;
-        heapifyDown(heap, 0); //Manutenção da escala de prioridade do heap
+        heap_positions[object] = 0;
+        heapifyDown(heap, 0,heap_positions); //Manutenção da escala de prioridade do heap
     }
 }
 
 // Função para remover o nó de maior prioridade (com maior próximo acesso) da heap
-HeapNode extractMax(MaxHeap *heap) {
+HeapNode extractMax(MaxHeap *heap, int * heap_positions) {
     HeapNode maxNode = heap->nodes[0];
+    heap_positions[maxNode.object] = -1;
     heap->nodes[0] = heap->nodes[--heap->size];
-    heapifyDown(heap, 0);
+    heap_positions[heap->nodes[0].object] = 0;
+    heapifyDown(heap, 0,heap_positions);
     return maxNode;
 }
 
@@ -153,22 +166,15 @@ void calcular_proximos_acessos(int sequence[], int length, ListNode **future_acc
     }
 }
 
-int find_position_heap(MaxHeap * heap, int object){
-    for (int g = 0; g < heap->size; g++){
-        if (heap->nodes[g].object == object) return g;
-    }
-    return -1;
-}
-
-void update_heap_priority(MaxHeap * heap, int object, int new_priority){
+void update_heap_priority(MaxHeap * heap, int object, int new_priority, int * heap_positions){
     //Localiza posição
-    int position = find_position_heap(heap, object);
+    int position = heap_positions[object];
 
     //Atualizar prioridade do objeto
     heap->nodes[position].next_access = new_priority;
 
     //Reajustar a posição na heap de forma a manter a propriedade da heap
-    heapifyUp(heap,position);
+    heapifyUp(heap,position,heap_positions);
     return;
 }
 
@@ -199,6 +205,8 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     MaxHeap *heap = createHeap(cache_size);
 
     int * cache_positions = createCachePositions(num_objects);
+
+    int * heap_positions = malloc(num_objects*(sizeof(int*)));
 
     // Processo de gerenciamento de cache:
 
@@ -231,7 +239,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
             if (cache_count >= cache_size) { //Se o cache estiver cheio => Remover um elemento
                 // Decidir qual objeto remover
-                HeapNode node = extractMax(heap);
+                HeapNode node = extractMax(heap,heap_positions);
                 
                 cache[cache_positions[node.object]] = current_object;
 
@@ -245,7 +253,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
                 cache_count++;
             }       
 
-            insertHeap(heap, current_object, next_access[current_object]); //Inserir na fila de prioridade
+            insertHeap(heap, current_object, next_access[current_object],heap_positions); //Inserir na fila de prioridade
 
             //Incrementa número de inserções
             insercoes++;
@@ -254,7 +262,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
         
         } else { //Se o objeto estiver no cache => Ajustar fila de prioridades 
             //printf(" ");
-           update_heap_priority(heap,current_object,next_access[current_object]);
+           update_heap_priority(heap,current_object,next_access[current_object],heap_positions);
 
             
         }
