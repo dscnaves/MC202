@@ -180,10 +180,6 @@ int * createCachePositions(int num_objects){
     return cache_positions;
 }
 
-
-void set_cache_value(int * cache, int* cache_position, int index, int new_value){
-
-}
 // Função gerencia quais objetos serão mantidos no cache e quando será necessário remover um objeto
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
@@ -279,11 +275,14 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     free(cache);
     free(next_access);
     future_access_free(future_access, num_objects);
+    free(cache_positions);
     free(heap->nodes);
     free(heap);
 
     return insercoes;
 }
+
+
 
 int main() {
     int cache_size, num_objects, sequence_length;
@@ -304,4 +303,3 @@ int main() {
 
     return 0;
 }
-
