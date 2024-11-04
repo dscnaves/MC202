@@ -155,21 +155,28 @@ void calcular_proximos_acessos(int sequence[], int length, ListNode **future_acc
 // Função gerencia quais objetos serão mantidos no cache e quando será necessário remover um objeto
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
+
+    //Alocando array para armazenar os objetos atualmente no cache
     int *cache = (int *)malloc(cache_size * sizeof(int));
-    int cache_count = 0;
+    int cache_count = 0; //Mantém o número atual de objetos no cache e aponta para a próxima posição disponível para um novo objeto
 
+    //Array que armazena o próximo acesso de cada objeto
     int *next_access = next_access_initialize(num_objects, length);
+    //Um array de ponteiros para listas ligadas, onde cada lista representa os índices futuros de acesso para cada objeto
     ListNode **future_access = future_access_initialize(num_objects);
-
+    
+    //Preenche future_access para cada objeto com todos os índices futuros em que ele será acessado
     calcular_proximos_acessos(sequence, length, future_access, num_objects);
 
     MaxHeap *heap = createHeap(cache_size);
 
-    // Processo de gerenciamento de cache
+    // Processo de gerenciamento de cache:
+
+    //Loop Principal para Processar Cada Acesso
     for (int i = 0; i < length; i++) {
         int current_object = sequence[i];
 
-        // Atualiza o próximo acesso
+        //A função atualiza o próximo acesso do objeto removendo o nó atual da lista
         if (future_access[current_object] != NULL) {
             ListNode *temp = future_access[current_object];
             future_access[current_object] = future_access[current_object]->next;
@@ -178,7 +185,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
         if (future_access[current_object] == NULL) {
             next_access[current_object] = length; // Se não houver mais acessos futuros, define como fora do intervalo.
-        } else {
+        } else { //Caso contrário, o próximo acesso é atualizado para o índice do próximo nó na lista ligada
             next_access[current_object] = future_access[current_object]->access_index;
         }
 
@@ -193,10 +200,13 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
         // Se o objeto não estiver no cache => Inseri-lo
         if (!found_in_cache) {
-            if (cache_count >= cache_size) { // Se o cache estiver cheio
+
+            if (cache_count >= cache_size) { // Se o cache estiver cheio => Remover um elemento
                 // Decidir qual objeto remover
                 HeapNode node = extractMax(heap);
-                for (int j = 0; j < cache_count; j++) {
+
+                //Manter o array cache compacto, sem lacunas, espaços vazios
+                for (int j = 0; j < cache_count; j++) { //Encontrar o índice do objeto node.object no array cache
                     if (cache[j] == node.object) {
                         for (int k = j; k < cache_count - 1; k++) {
                             cache[k] = cache[k + 1];
@@ -206,10 +216,15 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
                     }
                 }
             }
-            cache[cache_count++] = current_object;
-            insertHeap(heap, current_object, next_access[current_object]);
+            
+            //Inserir objeto
+            cache[cache_count++] = current_object; //Inserir no cache
+            insertHeap(heap, current_object, next_access[current_object]); //Inserir na fila de prioridade
+
+            //Incrementa número de inserções
             insercoes++;
-        } else {
+        
+        } else { //Se o objeto estiver no cache => Ajustar fila de prioridades 
             insertHeap(heap, current_object, next_access[current_object]);
         }
     }
