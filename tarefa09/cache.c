@@ -113,7 +113,7 @@ int *next_access_initialize(int num_objects, int length) {
     return next_access;
 }
 
-// Função para alocar e inicializar os acessos futuros
+// Função para alocar e inicializar o array de "listas ligadas" acessos futuros
 ListNode **future_access_initialize(int num_objects) {
     ListNode **future_access = malloc(num_objects * sizeof(ListNode *));
     for (int i = 0; i < num_objects; i++) {
@@ -137,12 +137,18 @@ void future_access_free(ListNode **future_access, int num_objects) {
 
 // Função para preencher a estrutura future_access
 void calcular_proximos_acessos(int sequence[], int length, ListNode **future_access, int num_objects) {
+    //Percorre a sequência de acessos de trás para frente: length - 1 até 0
     for (int i = length - 1; i >= 0; i--) {
+
+        //Em cada iteração, obj é o objeto acessado na posição i da sequência
         int obj = sequence[i];
+
         ListNode *newNode = (ListNode *)malloc(sizeof(ListNode));
-        newNode->access_index = i;
-        newNode->next = future_access[obj];
-        future_access[obj] = newNode;
+        newNode->access_index = i; //Armazena o índice da posição onde obj será acessado naquele nó
+
+        //O novo nó é inserido no início da lista ligada do objeto obj
+        newNode->next = future_access[obj]; //Novo nó aponte para o antigo início da lista
+        future_access[obj] = newNode; //Atualiza o início da lista para o novo nó
     }
 }
 
@@ -222,6 +228,7 @@ int main() {
 
     scanf("%d %d %d", &cache_size, &num_objects, &sequence_length);
 
+    //Array contendo a sequência de acessos aos objetos
     int *sequence = (int *)malloc(sequence_length * sizeof(int));
 
     for (int i = 0; i < sequence_length; i++) {
