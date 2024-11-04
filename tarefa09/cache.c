@@ -152,6 +152,25 @@ void calcular_proximos_acessos(int sequence[], int length, ListNode **future_acc
     }
 }
 
+int find_position_heap(MaxHeap * heap, int object){
+    for (int g = 0; g < heap->size; g++){
+        if (heap->nodes[g].object == object) return g;
+    }
+    return -1;
+}
+
+void update_heap_priority(MaxHeap * heap, int object, int new_priority){
+    //Localiza posição
+    int position = find_position_heap(heap, object);
+
+    //Atualizar prioridade do objeto
+    heap->nodes[position].next_access = new_priority;
+
+    //Reajustar a posição na heap de forma a manter a propriedade da heap
+    heapifyUp(heap,position);
+    return;
+}
+
 // Função gerencia quais objetos serão mantidos no cache e quando será necessário remover um objeto
 int cache(int cache_size, int num_objects, int sequence[], int length) {
     int insercoes = 0;
@@ -176,7 +195,7 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
     for (int i = 0; i < length; i++) {
         int current_object = sequence[i];
 
-        //A função atualiza o próximo acesso do objeto removendo o nó atual da lista
+        //A função atualiza o próximo acesso do objeto removendo o nó atual da lista ligada future_acess[i]
         if (future_access[current_object] != NULL) {
             ListNode *temp = future_access[current_object];
             future_access[current_object] = future_access[current_object]->next;
@@ -223,10 +242,33 @@ int cache(int cache_size, int num_objects, int sequence[], int length) {
 
             //Incrementa número de inserções
             insercoes++;
+            //printf("*");
+  
         
         } else { //Se o objeto estiver no cache => Ajustar fila de prioridades 
-            insertHeap(heap, current_object, next_access[current_object]);
+            //printf(" ");
+            /*
+            -> Posição heap
+            -> Atualizar prioridade
+            -> Atulizar a posição => heapup
+            */
+
+           update_heap_priority(heap,current_object,next_access[current_object]);
+
+            
         }
+ 
+        // printf("%2d | ", current_object);
+        // for(int k = 0; k < cache_count; k++){
+        //     printf("%2d, ", heap->nodes[k].object);
+        // }
+        // printf("\n "); 
+        // printf("%2d > ", next_access[current_object]);
+        // for(int k = 0; k < cache_count; k++){
+        //     printf("%2d, ", heap->nodes[k].next_access);
+        // }
+        // printf("\n");
+        // printf("\n");
     }
 
     free(cache);
