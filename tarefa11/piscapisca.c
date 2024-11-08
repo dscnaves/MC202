@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define MAX_VERTEX 1000
 
@@ -106,6 +107,7 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
 //Busca em profundidade (DFS) para detecção de ciclos
 void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle) {
     //Marca o vértice atual como visitado
+    printf("%d ", vertex);
     visited[vertex] = 1;
 
     //Itera sobre todos os vértices para verificar adjacências
@@ -126,8 +128,11 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
             //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
             else if (i != parent) {
                 //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                
                 inCycle[vertex] = 1;
                 inCycle[i] = 1;
+
+                
             }
         }
     }
@@ -146,10 +151,22 @@ void classifyLamps(Graph *graph, int source) {
 
     //BFS garante que a distância calculada para cada vértice é a mínima em termos de número de arestas
     bfs(graph, source, distances);
+    print_matrix(graph);
+    printf("\n");
+
+    for(int i=0; i<graph->num_vertices; i++){
+        printf("%d ", distances[i]);
+    }
+    printf("\n");
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
     dfsCycleDetection(graph, source, visited, -1, inCycle);  // Detecta ciclos
 
+    printf("\n");
+    for(int i=0; i<graph->num_vertices; i++){
+        printf("%d ", inCycle[i]);
+    }
+    printf("\n");
     //Exibe as lâmpadas em ordem de distância e status
     //Primeira iteração: percorre todos os valores possíveis de distância (d)
     for (int d = 0; d < graph->num_vertices; d++) {
@@ -167,6 +184,7 @@ void classifyLamps(Graph *graph, int source) {
         }
     }
 }
+
 
 int main(){
     //Reading of data
