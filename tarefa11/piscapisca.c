@@ -132,12 +132,14 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                 inCycle[vertex] = 1;
                 inCycle[i] = 1;
 
-                int current_vertex = vertex;
                 //Marcar meio do vertíces pertences ao ciclo
-                while(inCycle[pai[current_vertex]] != 1){
+                int current_vertex = vertex;
+                //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                while(inCycle[pai[current_vertex]] != 1 || pai[current_vertex] != -1){
                     inCycle[current_vertex] = 1;
                     current_vertex = pai[current_vertex];
-                }                
+                }
+                inCycle[current_vertex] = 1;           
             }
         }
     }
