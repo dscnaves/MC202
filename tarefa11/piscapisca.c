@@ -105,10 +105,11 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
 }
 
 //Busca em profundidade (DFS) para detecção de ciclos
-void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle) {
+void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai) {
     //Marca o vértice atual como visitado
     printf("%d ", vertex);
     visited[vertex] = 1;
+    pai[vertex] = parent;
 
     //Itera sobre todos os vértices para verificar adjacências
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -122,17 +123,21 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                 /* -> Se i não foi visitado, chamamos a dfsCycleDetection recursivamente para explorar i
                 -> Vertex passa a ser o pai de i
                 -> Continuando a busca até que não haja mais vértices não visitados conectados a i */
-                dfsCycleDetection(graph, i, visited, vertex, inCycle);
+                dfsCycleDetection(graph, i, visited, vertex, inCycle,pai);
             }
 
             //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
             else if (i != parent) {
                 //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
-                
                 inCycle[vertex] = 1;
                 inCycle[i] = 1;
 
-                
+                int current_vertex = vertex;
+                //Marcar meio do vertíces pertences ao ciclo
+                while(inCycle[pai[current_vertex]] != 1){
+                    inCycle[current_vertex] = 1;
+                    current_vertex = pai[current_vertex];
+                }                
             }
         }
     }
@@ -143,6 +148,7 @@ void classifyLamps(Graph *graph, int source) {
     int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
     int inCycle[MAX_VERTEX] = {0};
     int visited[MAX_VERTEX] = {0};
+    int pai[MAX_VERTEX] = {0};
 
     //Inicialmente consideramos que todas as lâmpadas estão não acessíveis
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -160,7 +166,7 @@ void classifyLamps(Graph *graph, int source) {
     printf("\n");
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
-    dfsCycleDetection(graph, source, visited, -1, inCycle);  // Detecta ciclos
+    dfsCycleDetection(graph, source, visited, -1, inCycle, pai);  // Detecta ciclos
 
     printf("\n");
     for(int i=0; i<graph->num_vertices; i++){
