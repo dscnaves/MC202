@@ -84,18 +84,50 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
     //Adiciona o vértice inicial à fila
     priority_queue[rear++] = start_vertex;
 
-    //Processamento da fila enquanto houver vértices
+    //Processamento da fila enquanto houver vértices => Quando (front == rear) => significa que todos os vértices acessíveis a partir do vértice inicial foram visitados
     while (front < rear) {
-        //Pegar o vértice da frente da fila e incrementa o ponteiro da frente
+        //Pega o vértice na frente da fila (current) e avança o ponteiro front, indicando que esse vértice será processado
         int current = priority_queue[front++];
 
-        //Itera sobre os vizinhos do vértice atual
+        //Explora todos os vértices adjacentes ao vértice atual (current)
+        //Iterar sob todos os vertices do grafo
         for (int i = 0; i < graph->num_vertices; i++) {
-            //Se há uma aresta e o vizinho não foi visitado
+            //Verifica se existe uma aresta entre current e i && e se i ainda não foi visitado
             if (graph->adjacency_matrix[current][i] && !visited[i]) {
                 visited[i] = 1;
-                distances[i] = distances[current] + 1;
+                distances[i] = distances[current] + 1; //i está um passo mais distante da origem do que current
+                //Adiciona o vértice i ao final da fila para que ele seja processado após os vértices que já estão na fila
                 priority_queue[rear++] = i;
+            }
+        }
+    }
+}
+
+// Implementação da busca em profundidade (DFS) para detecção de ciclos
+void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle) {
+    //Marca o vértice atual como visitado
+    visited[vertex] = 1;
+
+    //Itera sobre todos os vértices para verificar adjacências
+    for (int i = 0; i < graph->num_vertices; i++) {
+        
+        //Se há uma aresta entre o vértice atual e o vértice i
+        if (graph->adjacency_matrix[vertex][i] == 1) {
+            
+            //Há uma conexão
+            //Se o vértice vizinho i ainda não foi visitado
+            if (!visited[i]) {
+                /* -> Se i não foi visitado, chamamos a dfsCycleDetection recursivamente para explorar i
+                -> Vertex passa a ser o pai de i
+                -> Continuando a busca até que não haja mais vértices não visitados conectados a i */
+                dfsCycleDetection(graph, i, visited, vertex, inCycle);
+            }
+
+            //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
+            else if (i != parent) {
+                //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                inCycle[vertex] = 1;
+                inCycle[i] = 1;
             }
         }
     }
