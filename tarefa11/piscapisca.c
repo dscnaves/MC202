@@ -103,7 +103,7 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
     }
 }
 
-// Implementação da busca em profundidade (DFS) para detecção de ciclos
+//Busca em profundidade (DFS) para detecção de ciclos
 void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle) {
     //Marca o vértice atual como visitado
     visited[vertex] = 1;
@@ -128,6 +128,41 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                 //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
                 inCycle[vertex] = 1;
                 inCycle[i] = 1;
+            }
+        }
+    }
+}
+
+// Função para classificar as lâmpadas com base nas distâncias e ciclos
+void classifyLamps(Graph *graph, int source) {
+    int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
+    int inCycle[MAX_VERTEX] = {0};
+    int visited[MAX_VERTEX] = {0};
+
+    //Inicialmente consideramos que todas as lâmpadas estão não acessíveis
+    for (int i = 0; i < graph->num_vertices; i++) {
+        distances[i] = -1;  // Inicializa distâncias como -1 (não acessível)
+    }
+
+    //BFS garante que a distância calculada para cada vértice é a mínima em termos de número de arestas
+    bfs(graph, source, distances);
+    //Marcar as lâmpadas que fazem parte de ciclos
+    //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
+    dfsCycleDetection(graph, source, visited, -1, inCycle);  // Detecta ciclos
+
+    //Exibe as lâmpadas em ordem de distância e status
+    //Primeira iteração: percorre todos os valores possíveis de distância (d)
+    for (int d = 0; d < graph->num_vertices; d++) {
+        //Percorre todos os vértices do grafo (i) para encontrar as lâmpadas cuja distances[i] corresponde à distância d
+        for (int i = 0; i < graph->num_vertices; i++) {
+            //A lâmpada i de distândia d é acessível/energizada a partir da fonte
+            if (distances[i] == d && distances[i] != -1) {
+                //Está dentro do array ciclo
+                if (inCycle[i])
+                    printf("%d a distancia %d: queimada\n", i, d);
+                //Não está dentro de ciclo
+                else
+                    printf("%d a distancia %d: acesa\n", i, d);
             }
         }
     }
