@@ -67,6 +67,40 @@ void free_matrix(Graph *graph){
     free(graph);
 }
 
+//Realiza uma busca em largura (Breadth-First Search, BFS) para calcular as distâncias entre um vértice de origem (start_vertex) e todos os outros vértices do grafo
+void bfs(Graph *graph, int start_vertex, int *distances) {
+    //Array para marcar os vértices visitados
+    int visited[MAX_VERTEX] = {0};
+    
+    //Fila de prioridade FIFO para o controle dos vértices a serem processados
+    int priority_queue[MAX_VERTEX];
+    int front = 0; //"Frente" => Posição da fila de onde o próximo vértice será retirado para ser processado
+    int rear = 0; //"Traseira" => Posição na qual o próximo vértice será inserido na fila
+
+    //Marca o vértice inicial como visitado
+    visited[start_vertex] = 1;
+    //A distância para o vértice inicial é zero
+    distances[start_vertex] = 0;
+    //Adiciona o vértice inicial à fila
+    priority_queue[rear++] = start_vertex;
+
+    //Processamento da fila enquanto houver vértices
+    while (front < rear) {
+        //Pegar o vértice da frente da fila e incrementa o ponteiro da frente
+        int current = priority_queue[front++];
+
+        //Itera sobre os vizinhos do vértice atual
+        for (int i = 0; i < graph->num_vertices; i++) {
+            //Se há uma aresta e o vizinho não foi visitado
+            if (graph->adjacency_matrix[current][i] && !visited[i]) {
+                visited[i] = 1;
+                distances[i] = distances[current] + 1;
+                priority_queue[rear++] = i;
+            }
+        }
+    }
+}
+
 int main(){
     //Reading of data
     int num_vertices, num_conections;
