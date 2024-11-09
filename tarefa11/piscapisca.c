@@ -137,8 +137,6 @@ void getAccessSequence(Graph *graph, int start_vertex, int *sequencia_acessos) {
 
 //Busca em profundidade (DFS) para detecção de ciclos
 void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai) {
-    
-    printf("- %d ->", vertex);
 
     //Marca o vértice atual como visitado
     visited[vertex] = 1;
@@ -167,12 +165,9 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                     inCycle[i] = 1;
 
                     //Marcar meio do vertíces pertences ao ciclo
-                    printf("\nPor quem passamos no ciclo voltando pelo caminho onde viemos:\n");
                     int current_vertex = pai[vertex];
                     //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
-                    while(inCycle[current_vertex] != 1 && current_vertex != -1){
-                        printf(" °%d° ", current_vertex);
-                        
+                    while(inCycle[current_vertex] != 1 && current_vertex != -1){                       
                         inCycle[current_vertex] = 1;
                         current_vertex = pai[current_vertex];
                     }                    
@@ -182,29 +177,33 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
     }
 }
 
-//Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
-void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int * sequencia_acessos_profundidade) {
-    for (int x = 0; x<graph->num_vertices ;x++){
+// Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
+void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int *sequencia_acessos_profundidade) {
+    for (int x = 0; x < graph->num_vertices; x++) {
         int current_vertex = sequencia_acessos_profundidade[x];
-        
-        // Se o pai do vértice atual está dentro de um ciclo
-        if (inCycle[pai[current_vertex]] == 1) {
-            // E se o vértice atual não está dentro do ciclo
-            if (inCycle[current_vertex] == 0) {
-                // Marca o vértice atual como "Apagado" (valor 2)
-                inCycle[current_vertex] = 2;
-            }
+
+        // Verifica se chegamos ao final da sequência de acessos
+        if (current_vertex == -1) {
+            break;
+        }
+
+        // Verifica se o pai do vértice atual está em um ciclo e o próprio vértice ainda não faz parte de um ciclo ou não está marcado
+        if (pai[current_vertex] != -1 && inCycle[pai[current_vertex]] == 1 && inCycle[current_vertex] == 0) {
+            // Marca o vértice atual como "Apagado" (valor 2)
+            inCycle[current_vertex] = 2;
         }
     }
-    
 }
+
+
 
 // Função para classificar as lâmpadas com base nas distâncias e ciclos
 void classifyLamps(Graph *graph, int source) {
     int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
     int inCycle[MAX_VERTEX] = {0};
     int visited[MAX_VERTEX] = {0};
-    int pai[MAX_VERTEX] = {-1};
+    int pai[MAX_VERTEX];
+    for (int i = 0; i < MAX_VERTEX; i++) pai[i] = -1;
 
     int sequencia_acessos_profundidade[MAX_VERTEX] = {-1}; // Array para armazenar a sequência de acessos
 
@@ -216,14 +215,6 @@ void classifyLamps(Graph *graph, int source) {
     //BFS garante que a distância calculada para cada vértice é a mínima em termos de número de arestas
     bfs(graph, source, distances);
 
-
-    print_matrix(graph);
-    printf("\n");
-    for(int i=0; i<graph->num_vertices; i++){
-        printf("%d ", distances[i]);
-    }
-    printf("\n");
-
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
     dfsCycleDetection(graph, source, visited, -1, inCycle, pai);  // Detecta ciclos
@@ -231,21 +222,8 @@ void classifyLamps(Graph *graph, int source) {
     // Obtém a sequência de acessos por DFS a partir do vértice de origem
     getAccessSequence(graph, source, sequencia_acessos_profundidade);
 
-    printf("sequência de acessos:\n");
-    for (int i = 0; i < graph->num_vertices && sequencia_acessos_profundidade[i] != -1; i++) {
-        printf("%d ", sequencia_acessos_profundidade[i]);
-    }
-
-    printf("\n");
-    for(int i=0; i<graph->num_vertices; i++){
-        printf("%d ", inCycle[i]);
-    }
-    printf("\n");
-
-
-
     //Atualizar o estado dos vértices no ciclo
-    dfsUpdateCycleStatus(graph, source, visited, inCycle, pai);
+    dfsUpdateCycleStatus(graph, source, inCycle, pai, sequencia_acessos_profundidade);
 
     //Exibe as lâmpadas em ordem de distância e status
     //Primeira iteração: percorre todos os valores possíveis de distância (d)
