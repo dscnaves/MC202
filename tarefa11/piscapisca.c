@@ -68,6 +68,8 @@ void free_matrix(Graph *graph){
     free(graph);
 }
 
+
+
 //Realiza uma busca em largura (Breadth-First Search, BFS) para calcular as distâncias entre um vértice de origem (start_vertex) e todos os outros vértices do grafo
 void bfs(Graph *graph, int start_vertex, int *distances) {
     //Array para marcar os vértices visitados
@@ -104,16 +106,43 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
     }
 }
 
+// Função de busca em profundidade (DFS) que registra a sequência de acessos
+void dfsWithAccessSequence(Graph *graph, int vertex, int *visited, int *sequencia_acessos, int *index) {
+    visited[vertex] = 1; // Marca o vértice atual como visitado
+    sequencia_acessos[(*index)++] = vertex; // Armazena o vértice atual na sequência de acessos e incrementa o índice
+
+    // Itera sobre todos os vértices para verificar adjacências
+    for (int i = 0; i < graph->num_vertices; i++) {
+        // Se há uma aresta entre o vértice atual e o vértice i e i não foi visitado
+        if (graph->adjacency_matrix[vertex][i] == 1 && !visited[i]) {
+            dfsWithAccessSequence(graph, i, visited, sequencia_acessos, index); // Chamada recursiva para continuar a DFS
+        }
+    }
+}
+
+// Função auxiliar para obter a sequência de acessos a partir de um vértice inicial
+void getAccessSequence(Graph *graph, int start_vertex, int *sequencia_acessos) {
+    int visited[MAX_VERTEX] = {0}; // Array para controlar os vértices visitados
+    int index = 0; // Índice inicial para a sequência de acessos
+
+    // Inicializa o array `sequencia_acessos` com -1 para indicar posições vazias
+    for (int i = 0; i < graph->num_vertices; i++) {
+        sequencia_acessos[i] = -1;
+    }
+
+    // Chama a DFS para obter a sequência de acessos
+    dfsWithAccessSequence(graph, start_vertex, visited, sequencia_acessos, &index);
+}
+
+
 //Busca em profundidade (DFS) para detecção de ciclos
-void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai, int * sequencia_acessos_profundidade, int k) {
+void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai) {
     
     printf("- %d ->", vertex);
 
     //Marca o vértice atual como visitado
     visited[vertex] = 1;
     pai[vertex] = parent;
-    sequencia_acessos_profundidade[k] = vertex;
-    k++;
 
     //Itera sobre todos os vértices para verificar adjacências
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -127,7 +156,7 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                 /* -> Se i não foi visitado, chamamos a dfsCycleDetection recursivamente para explorar i
                 -> Vertex passa a ser o pai de i
                 -> Continuando a busca até que não haja mais vértices não visitados conectados a i */
-                dfsCycleDetection(graph, i, visited, vertex, inCycle,pai,sequencia_acessos_profundidade, k);
+                dfsCycleDetection(graph, i, visited, vertex, inCycle,pai);
             }
 
             //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
@@ -175,10 +204,9 @@ void classifyLamps(Graph *graph, int source) {
     int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
     int inCycle[MAX_VERTEX] = {0};
     int visited[MAX_VERTEX] = {0};
-    int pai[MAX_VERTEX] = {0};
+    int pai[MAX_VERTEX] = {-1};
 
-    int sequencia_acessos_profundidade[MAX_VERTEX];
-    int k = 0;
+    int sequencia_acessos_profundidade[MAX_VERTEX] = {-1}; // Array para armazenar a sequência de acessos
 
     //Inicialmente consideramos que todas as lâmpadas estão não acessíveis
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -196,13 +224,17 @@ void classifyLamps(Graph *graph, int source) {
     }
     printf("\n");
 
-
-
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
-    dfsCycleDetection(graph, source, visited, -1, inCycle, pai, sequencia_acessos_profundidade,k);  // Detecta ciclos
+    dfsCycleDetection(graph, source, visited, -1, inCycle, pai);  // Detecta ciclos
 
+    // Obtém a sequência de acessos por DFS a partir do vértice de origem
+    getAccessSequence(graph, source, sequencia_acessos_profundidade);
 
+    printf("sequência de acessos:\n");
+    for (int i = 0; i < graph->num_vertices && sequencia_acessos_profundidade[i] != -1; i++) {
+        printf("%d ", sequencia_acessos_profundidade[i]);
+    }
 
     printf("\n");
     for(int i=0; i<graph->num_vertices; i++){
@@ -212,8 +244,7 @@ void classifyLamps(Graph *graph, int source) {
 
 
 
-    //Nova chamada para a função dfsUpdateCycleStatus para atualizar o estado dos vértices no ciclo
-    for (int i = 0; i < graph->num_vertices; i++) visited[i] = 0; // Reinicia o array visited
+    //Atualizar o estado dos vértices no ciclo
     dfsUpdateCycleStatus(graph, source, visited, inCycle, pai);
 
     //Exibe as lâmpadas em ordem de distância e status
