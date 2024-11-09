@@ -106,8 +106,10 @@ void bfs(Graph *graph, int start_vertex, int *distances) {
 
 //Busca em profundidade (DFS) para detecção de ciclos
 void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai, int * sequencia_acessos_profundidade, int k) {
+    
+    printf("- %d ->", vertex);
+
     //Marca o vértice atual como visitado
-    printf("%d ", vertex);
     visited[vertex] = 1;
     pai[vertex] = parent;
     sequencia_acessos_profundidade[k] = vertex;
@@ -130,29 +132,38 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
 
             //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
             else if (i != parent) {
-                //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
-                inCycle[vertex] = 1;
-                inCycle[i] = 1;
+                if (inCycle[vertex] != 1 && inCycle[i] != 1){
+                    //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                    inCycle[vertex] = 1;
+                    inCycle[i] = 1;
 
-                //Marcar meio do vertíces pertences ao ciclo
-                int current_vertex = vertex;
-                //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
-                while(inCycle[pai[current_vertex]] != 1 || pai[current_vertex] != -1){
-                    inCycle[current_vertex] = 1;
-                    current_vertex = pai[current_vertex];
-                }
-                inCycle[current_vertex] = 1;           
+                    //Marcar meio do vertíces pertences ao ciclo
+                    printf("\nPor quem passamos no ciclo voltando pelo caminho onde viemos:\n");
+                    int current_vertex = pai[vertex];
+                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                    while(inCycle[current_vertex] != 1 && current_vertex != -1){
+                        printf(" °%d° ", current_vertex);
+                        
+                        inCycle[current_vertex] = 1;
+                        current_vertex = pai[current_vertex];
+                    }                    
+                }                          
             }
         }
     }
 }
 
-//Nova função: Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
+//Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
 void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int * sequencia_acessos_profundidade) {
     for (int x = 0; x<graph->num_vertices ;x++){
-        if (inCycle[pai[sequencia_acessos_profundidade[x]]] == 1){
-            if(inCycle[sequencia_acessos_profundidade[x]] == 0){
-                inCycle[sequencia_acessos_profundidade[x]] = 1;
+        int current_vertex = sequencia_acessos_profundidade[x];
+        
+        // Se o pai do vértice atual está dentro de um ciclo
+        if (inCycle[pai[current_vertex]] == 1) {
+            // E se o vértice atual não está dentro do ciclo
+            if (inCycle[current_vertex] == 0) {
+                // Marca o vértice atual como "Apagado" (valor 2)
+                inCycle[current_vertex] = 2;
             }
         }
     }
@@ -201,7 +212,7 @@ void classifyLamps(Graph *graph, int source) {
 
 
 
-    //Nova chamada para a função dfsUpdateCycleStatus para atualizar o estado dos vértices no ciclo ***
+    //Nova chamada para a função dfsUpdateCycleStatus para atualizar o estado dos vértices no ciclo
     for (int i = 0; i < graph->num_vertices; i++) visited[i] = 0; // Reinicia o array visited
     dfsUpdateCycleStatus(graph, source, visited, inCycle, pai);
 
@@ -216,8 +227,9 @@ void classifyLamps(Graph *graph, int source) {
                     printf("%d a distancia %d: queimada\n", i, d);
                 else if (inCycle[i] == 2)
                     printf("%d a distancia %d: apagada\n", i, d);
-                else
+                else if ((inCycle[i] == 0)){
                     printf("%d a distancia %d: acesa\n", i, d);
+                }
             }
         }
     }
