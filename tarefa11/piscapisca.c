@@ -145,6 +145,27 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
     }
 }
 
+//Nova função: Segunda busca em profundidade para atualizar o estado dos vértices no ciclo ***
+void dfsUpdateCycleStatus(Graph *graph, int vertex, int *visited, int *inCycle, int *pai) {
+    visited[vertex] = 1;
+
+    // Itera sobre todos os vértices adjacentes ao vértice atual
+    for (int i = 0; i < graph->num_vertices; i++) {
+        if (graph->adjacency_matrix[vertex][i] == 1 && !visited[i]) {
+            dfsUpdateCycleStatus(graph, i, visited, inCycle, pai);
+        }
+    }
+
+    // Verifica as condições no array pai e no array inCycle
+    if (pai[vertex] != -1 && inCycle[pai[vertex]] == 1) {
+        if (inCycle[vertex] == 1) {
+            inCycle[vertex] = 1;
+        } else {
+            inCycle[vertex] = 2;
+        }
+    }
+}
+
 // Função para classificar as lâmpadas com base nas distâncias e ciclos
 void classifyLamps(Graph *graph, int source) {
     int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
@@ -159,22 +180,35 @@ void classifyLamps(Graph *graph, int source) {
 
     //BFS garante que a distância calculada para cada vértice é a mínima em termos de número de arestas
     bfs(graph, source, distances);
+
+
     print_matrix(graph);
     printf("\n");
-
     for(int i=0; i<graph->num_vertices; i++){
         printf("%d ", distances[i]);
     }
     printf("\n");
+
+
+
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
     dfsCycleDetection(graph, source, visited, -1, inCycle, pai);  // Detecta ciclos
+
+
 
     printf("\n");
     for(int i=0; i<graph->num_vertices; i++){
         printf("%d ", inCycle[i]);
     }
     printf("\n");
+
+
+
+    //Nova chamada para a função dfsUpdateCycleStatus para atualizar o estado dos vértices no ciclo ***
+    for (int i = 0; i < graph->num_vertices; i++) visited[i] = 0; // Reinicia o array visited
+    dfsUpdateCycleStatus(graph, source, visited, inCycle, pai);
+
     //Exibe as lâmpadas em ordem de distância e status
     //Primeira iteração: percorre todos os valores possíveis de distância (d)
     for (int d = 0; d < graph->num_vertices; d++) {
@@ -182,10 +216,10 @@ void classifyLamps(Graph *graph, int source) {
         for (int i = 0; i < graph->num_vertices; i++) {
             //A lâmpada i de distândia d é acessível/energizada a partir da fonte
             if (distances[i] == d && distances[i] != -1) {
-                //Está dentro do array ciclo
-                if (inCycle[i])
+                if (inCycle[i] == 1)
                     printf("%d a distancia %d: queimada\n", i, d);
-                //Não está dentro de ciclo
+                else if (inCycle[i] == 2)
+                    printf("%d a distancia %d: apagada\n", i, d);
                 else
                     printf("%d a distancia %d: acesa\n", i, d);
             }
