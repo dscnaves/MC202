@@ -136,11 +136,12 @@ void getAccessSequence(Graph *graph, int start_vertex, int *sequencia_acessos) {
 
 
 //Busca em profundidade (DFS) para detecção de ciclos
-void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai) {
+void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *inCycle, int * pai, int * sequencia_acessos, int num_conections) {
 
     //Marca o vértice atual como visitado
     visited[vertex] = 1;
     pai[vertex] = parent;
+
 
     //Itera sobre todos os vértices para verificar adjacências
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -154,7 +155,7 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                 /* -> Se i não foi visitado, chamamos a dfsCycleDetection recursivamente para explorar i
                 -> Vertex passa a ser o pai de i
                 -> Continuando a busca até que não haja mais vértices não visitados conectados a i */
-                dfsCycleDetection(graph, i, visited, vertex, inCycle,pai);
+                dfsCycleDetection(graph, i, visited, vertex, inCycle,pai,sequencia_acessos, num_conections);
             }
 
             //Se o vértice vizinho i já foi visitado e não é o pai => Há um ciclo
@@ -164,31 +165,59 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                     inCycle[vertex] = 1;
                     inCycle[i] = 1;
 
+
+                    int index_final_ciclo = 0;
+                    int index_inicio_ciclo = 0;
+
+                    for (int l = 0; l<num_conections; l++){
+                        if (sequencia_acessos[l] == vertex) {
+                            index_inicio_ciclo = l;
+                        }
+                        else if (sequencia_acessos[l] == i) {
+                            index_final_ciclo = l;
+                        }
+                    }
+
                     //Marcar meio do vertíces pertences ao ciclo
-                    int current_vertex = pai[vertex];
-                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
-                    while(inCycle[current_vertex] != 1 && current_vertex != -1){                       
-                        inCycle[current_vertex] = 1;
-                        current_vertex = pai[current_vertex];
-                    }                    
+                    int index_aux = index_inicio_ciclo;
+                    
+                    while (index_aux != index_final_ciclo) {
+                        inCycle[sequencia_acessos[index_aux]] = 1;
+                        index_aux++;                        
+                    }
                 }
                 //Caso onde há ciclos imendados
                 else if (inCycle[vertex] != 1 && inCycle[i] == 1) {
                     //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
                     inCycle[vertex] = 1;
-                    
+                    inCycle[i] = 1;
+
+
+                    int index_final_ciclo = 0;
+                    int index_inicio_ciclo = 0;
+
+                    for (int l = 0; l<num_conections; l++){
+                        if (sequencia_acessos[l] == vertex) {
+                            index_inicio_ciclo = l;
+                        }
+                        else if (sequencia_acessos[l] == i) {
+                            index_final_ciclo = l;
+                        }
+                    }
+
                     //Marcar meio do vertíces pertences ao ciclo
-                    int current_vertex = pai[vertex];
-                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
-                    while(inCycle[current_vertex] != 1 && current_vertex != -1){                       
-                        inCycle[current_vertex] = 1;
-                        current_vertex = pai[current_vertex];
+                    int index_aux = index_inicio_ciclo;
+                    
+                    while (index_aux != index_final_ciclo) {
+                        inCycle[sequencia_acessos[index_aux]] = 1;
+                        index_aux++;                        
+                    }
                     }
                 }                       
             }
         }
     }
-}
+
 
 // Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
 void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int *sequencia_acessos_profundidade) {
@@ -211,7 +240,7 @@ void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int 
 
 
 // Função para classificar as lâmpadas com base nas distâncias e ciclos
-void classifyLamps(Graph *graph, int source) {
+void classifyLamps(Graph *graph, int source, int num_conections) {
     int distances[MAX_VERTEX];  //Distância mínima de cada lâmpada em relação à lâmpada de origem (source)
     int inCycle[MAX_VERTEX] = {0};
     int visited[MAX_VERTEX] = {0};
@@ -230,7 +259,7 @@ void classifyLamps(Graph *graph, int source) {
 
     //Marcar as lâmpadas que fazem parte de ciclos
     //Vértice inicial (source) não tem um "pai" => -1 indica isso porque nenhum vértice tem esse valor
-    dfsCycleDetection(graph, source, visited, -1, inCycle, pai);  // Detecta ciclos
+    dfsCycleDetection(graph, source, visited, -1, inCycle, pai, sequencia_acessos_profundidade, num_conections);  // Detecta ciclos
 
     // Obtém a sequência de acessos por DFS a partir do vértice de origem
     getAccessSequence(graph, source, sequencia_acessos_profundidade);
@@ -273,7 +302,7 @@ int main(){
     build_matrix(graph, num_conections);
 
     //Classifica as lâmpadas e exibe o estado de cada uma
-    classifyLamps(graph, source);
+    classifyLamps(graph, source, num_conections);
     
     //Libera a memória alocada para o grafo
     free_matrix(graph);
