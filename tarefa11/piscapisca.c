@@ -171,7 +171,20 @@ void dfsCycleDetection(Graph *graph, int vertex, int *visited, int parent, int *
                         inCycle[current_vertex] = 1;
                         current_vertex = pai[current_vertex];
                     }                    
-                }                          
+                }
+                //Caso onde há ciclos imendados
+                else if (inCycle[vertex] != 1 && inCycle[i] == 1) {
+                    //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                    inCycle[vertex] = 1;
+                    
+                    //Marcar meio do vertíces pertences ao ciclo
+                    int current_vertex = pai[vertex];
+                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                    while(inCycle[current_vertex] != 1 && current_vertex != -1){                       
+                        inCycle[current_vertex] = 1;
+                        current_vertex = pai[current_vertex];
+                    }
+                }                       
             }
         }
     }
