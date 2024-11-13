@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h> // Inclui INT_MAX
 
 #define NOT_FOUND_city -1
+#define INF INT_MAXf
 
 // Estrutura para representar uma cidade
 typedef struct {
@@ -70,6 +72,7 @@ void print_graph(Graph *graph) {
             }
         }
         printf("\n");
+        printf("\n");
     }
 }
 
@@ -81,10 +84,10 @@ void add_edge(Graph * graph, int source_city, int destination_city, int weight_e
     newEdge->destination = destination_city;
     newEdge->weight = weight_egde;
 
-    /*Define o ponteiro next da nova Edge para apontar para a cabeça atual da lista de adjacências de source (graph->adj_lists[src].head)*/
+    /*Define o ponteiro next da nova Edge para apontar para a cabeça atual da lista de adjacências de source (graph->adj_lists[source].head)*/
     newEdge->next = graph->adj_lists[source_city].head;
 
-    /*Atualiza graph->adj_lists[src].head para apontar para a nova Edge, tornando-a a nova cabeça da lista*/
+    /*Atualiza graph->adj_lists[source].head para apontar para a nova Edge, tornando-a a nova cabeça da lista*/
     graph->adj_lists[source_city].head = newEdge;
 
     //Criando ligação bidirecional de B->A:
@@ -106,13 +109,69 @@ int find_city_index(Graph * graph, char * name) {
     return NOT_FOUND_city;
 }
 
+//Calcular a menor distância de uma cidade de origem a todas as outras no grafo
+void dijkstra(Graph *graph, int source_city, int dist[]) {
+    int visited[MAX_CITIES] = {0};
+
+    //Armazenando as menores distâncias encontradas da cidade de origem src_city até cada cidade
+    for (int i = 0; i < graph->num_cities; i++) {
+        dist[i] = INT_MAX; //Inicializar com uma distância "infinita" para marcar que a distância não foi contabilizada
+    }
+    dist[source_city] = 0; //A distância da cidade de origem com ela mesma é zero
+
+    // Todas as cidades acessíveis a partir da origem já terão sido processadas
+    for (int i = 0; i < graph->num_cities - 1; i++) {
+        int min_dist = INT_MAX;
+        int lower_distance_index = -1; //Index da cidade de menor distancia até source
+
+        for (int j = 0; j < graph->num_cities; j++) {
+            //Se a cidade_destino u não foi visitada && a distância entre a cidade origem-u é menor que a mínima
+            if (!visited[j] && dist[j] < min_dist) {
+                min_dist = dist[j]; //A cidadeu é a cidade de distância mínima
+                lower_distance_index = j;
+            }
+        }
+
+        if (lower_distance_index == -1) break;
+
+
+
+
+        /* Atualiza a distância de uma cidade para outra cidade adjacente 
+        se for encontrado um caminho mais curto ao se passar por uma cidade intermediária*/
+
+        
+        // Um ponteiro que será usado para percorrer todas as conexões (arestas) da cidade lower_distance
+        // Inicializando current_edge para apontar para a lista de adjacências da cidade lower_distance
+        Edge *current_edge = graph->adj_lists[lower_distance_index].head;
+
+        // Percorre todas as arestas partindo de lower_distance
+        while (current_edge != NULL) {
+            // Armazena o índice da cidade adjacente conectada diretamente a lower_distance por meio da aresta current_edge
+            int dest_city = current_edge->destination;
+
+            /*
+            Verifica se dest_city ainda não foi visitada (ou seja, ainda não processamos essa cidade como destino final)
+            Verifica se a distância de source até dest_city, passando por lower_distance, é menor que a menor distância conhecida até dest_city diretamente
+            */
+            if (!visited[dest_city] && dist[lower_distance_index] + current_edge->weight < dist[dest_city]) {
+                //Calcula a nova distância até dest_city, passando por lower_distance
+                dist[dest_city] = dist[lower_distance_index] + current_edge->weight;
+            }
+            //Ir para próxima conexão de lower_dist
+            current_edge = current_edge->next;
+        }
+    }
+}
+
+
 int main(){
     int num_cities, num_routes;
     scanf("%d", &num_cities);
+    
+    Graph graph;
 
     init_graph(&graph, num_cities);
-
-    Graph graph;
 
     // Lendo as cidades e suas populações
     for (int i = 0; i < num_cities; i++) {
