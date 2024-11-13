@@ -183,6 +183,63 @@ void dijkstra(Graph *graph, int source_city, int dist[]) {
     }
 }
 
+/*
+Responsável por encontrar o melhor par de cidades para instalar dois centros de distribuição
+Objetivo: minimizar a "maior distância de atendimento" de qualquer cidade até o centro de distribuição mais próximo
+*/
+void find_best_centers(Graph *graph) {
+    //Índices das cidades escolhidas para os centros de distribuição
+    int best_city1 = -1, best_city2 = -1;
+    //Menor "maior distância de atendimento" entre todas as cidades e o centro mais próximo
+    int min_max_distance = MAX_CITIES;
+    int max_population_sum = 0;
+
+    //Laço para Testar Pares de Cidades
+    //Percorre cada cidade i no grafo
+    for (int i = 0; i < graph->num_cities; i++) {
+        //Percorre cada cidade j após i, para formar pares únicos de cidades (i, j)
+        //Garante não repetição de combiação enntre cidades
+        for (int j = i + 1; j < graph->num_cities; j++) {
+
+        //Calcular Distâncias para Cada Par de Cidades:
+            int dist_from_i[MAX_CITIES], dist_from_j[MAX_CITIES];
+            dijkstra(graph, i, dist_from_i);
+            dijkstra(graph, j, dist_from_j);
+
+
+        // Calcular a Maior Distância de Atendimento para o Par de Cidades (i, j):
+            // Armazena a maior distância de atendimento para o par de cidades (i, j)
+            int max_distance = 0;
+            //Percorre cada cidade k e calcula a menor distância de k até o centro de distribuição mais próximo entre i e j
+            for (int k = 0; k < graph->num_cities; k++) {
+                // Menor valor entre dist_from_i[k] e dist_from_j[k]
+                int min_distance = dist_from_i[k] < dist_from_j[k] ? dist_from_i[k] : dist_from_j[k];
+                /*Se min_distance é maior que o max_distance atual, ele é atualizado
+                Isso nos dá a maior distância de atendimento para qualquer cidade com os centros localizados em i e j
+                */
+                if (min_distance > max_distance) {
+                    max_distance = min_distance;
+                }
+            }
+
+            int population_sum = graph->cities[i].population + graph->cities[j].population;
+            /*Se max_distance for menor que min_max_distance, então o par (i, j) é uma opção melhor
+            pois reduz a maior distância de atendimento
+            ||
+            Se max_distance é igual a min_max_distance, o par com a maior soma populacional (population_sum) é preferido
+            */
+            if (max_distance < min_max_distance ||
+                (max_distance == min_max_distance && population_sum > max_population_sum)) {
+                min_max_distance = max_distance;
+                best_city1 = i;
+                best_city2 = j;
+            }
+        }
+    }
+
+    printf("Centros de distribuicao: %s e %s\n", graph->cities[best_city1].name, graph->cities[best_city2].name);
+    printf("Distancia de atendimento: %d\n", min_max_distance);
+}
 
 int main(){
     int num_cities, num_routes;
