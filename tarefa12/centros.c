@@ -5,6 +5,7 @@
 
 #define NOT_FOUND_city -1
 #define INF INT_MAXf
+#define MAX_CITIES 100
 
 // Estrutura para representar uma cidade
 typedef struct {
@@ -46,8 +47,17 @@ void init_graph(Graph * graph, int num_cities) {
     graph->num_cities = num_cities;
 
     graph->cities = malloc(num_cities * sizeof(City));
+    if (graph->cities == NULL){
+        printf("Erro de alocação de memória array cities");
+        exit(1);
+    }
 
     graph->adj_lists = malloc(num_cities * sizeof(AdjList));
+    if (graph->adj_lists == NULL){
+        printf("Erro de alocação de memória array adj_lists");
+        exit(1);
+    }
+
 
     for (int i = 0; i < num_cities; i++) {
         graph->adj_lists[i].head = NULL;
@@ -80,6 +90,10 @@ void print_graph(Graph *graph) {
 void add_edge(Graph * graph, int source_city, int destination_city, int weight_egde) {
     //Criando ligação de A->B:
     Edge * newEdge = (Edge *)malloc(sizeof(Edge));
+    if (newEdge == NULL){
+        printf("Erro de alocação de memória aresta newEgde");
+        exit(1);
+    }
     
     newEdge->destination = destination_city;
     newEdge->weight = weight_egde;
@@ -92,6 +106,10 @@ void add_edge(Graph * graph, int source_city, int destination_city, int weight_e
 
     //Criando ligação bidirecional de B->A:
     newEdge = (Edge *)malloc(sizeof(Edge));
+    if (newEdge == NULL){
+        printf("Erro de alocação de memória aresta newEgde");
+        exit(1);
+    }
     newEdge->destination = source_city;
     newEdge->weight = weight_egde;    
     newEdge->next = graph->adj_lists[destination_city].head;
@@ -134,7 +152,8 @@ void dijkstra(Graph *graph, int source_city, int dist[]) {
 
         if (lower_distance_index == -1) break;
 
-
+        // Significa que já encontramos o menor caminho até a cidade lower_distance e não precisamos processá-la novamente
+        visited[lower_distance_index] = 1;
 
 
         /* Atualiza a distância de uma cidade para outra cidade adjacente 
