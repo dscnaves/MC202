@@ -4,7 +4,7 @@
 #include <limits.h> // Inclui INT_MAX
 
 #define NOT_FOUND_city -1
-#define INF INT_MAXf
+#define INF INT_MAX
 #define MAX_CITIES 100
 
 // Estrutura para representar uma cidade
@@ -133,13 +133,13 @@ void dijkstra(Graph *graph, int source_city, int dist[]) {
 
     //Armazenando as menores distâncias encontradas da cidade de origem src_city até cada cidade
     for (int i = 0; i < graph->num_cities; i++) {
-        dist[i] = INT_MAX; //Inicializar com uma distância "infinita" para marcar que a distância não foi contabilizada
+        dist[i] = INF; //Inicializar com uma distância "infinita" para marcar que a distância não foi contabilizada
     }
     dist[source_city] = 0; //A distância da cidade de origem com ela mesma é zero
 
     // Todas as cidades acessíveis a partir da origem já terão sido processadas
     for (int i = 0; i < graph->num_cities - 1; i++) {
-        int min_dist = INT_MAX;
+        int min_dist = INF;
         int lower_distance_index = -1; //Index da cidade de menor distancia até source
 
         for (int j = 0; j < graph->num_cities; j++) {
@@ -166,10 +166,6 @@ void dijkstra(Graph *graph, int source_city, int dist[]) {
 
         // Percorre todas as arestas partindo de lower_distance
         while (current_edge != NULL) {
-
-
-            printf("aresta de peso %d atual indo para: %d", current_edge->weight, current_edge->destination);
-
 
             // Armazena o índice da cidade adjacente conectada diretamente a lower_distance por meio da aresta current_edge
             int dest_city = current_edge->destination;
@@ -206,20 +202,10 @@ void find_best_centers(Graph *graph) {
         //Garante não repetição de combiação enntre cidades
         for (int j = i + 1; j < graph->num_cities; j++) {
 
-        
-            printf("Comparando pares: %d %d", i, j);
-
-
         //Calcular Distâncias para Cada Par de Cidades:
             int dist_from_i[MAX_CITIES], dist_from_j[MAX_CITIES];
             dijkstra(graph, i, dist_from_i);
             dijkstra(graph, j, dist_from_j);
-
-            for(int x = 0; x<MAX_CITIES; x++){
-                printf("dist até i: %d\n", dist_from_i[x]);
-                printf("dist até i: %d\n", dist_from_j[x]);
-            }
-
 
         // Calcular a Maior Distância de Atendimento para o Par de Cidades (i, j):
             // Armazena a maior distância de atendimento para o par de cidades (i, j)
@@ -284,9 +270,9 @@ int main(){
         }
         else printf("Cidades não devidamente adicionadas");        
     }
-    
-    print_graph(&graph);
 
+    // Encontra e imprime os melhores centros de distribuição
+    find_best_centers(&graph);
 
     return 0;
 }
