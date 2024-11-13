@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define NOT_FOUND_city -1
@@ -111,6 +110,8 @@ int main(){
     int num_cities, num_routes;
     scanf("%d", &num_cities);
 
+    init_graph(&graph, num_cities);
+
     Graph graph;
 
     // Lendo as cidades e suas populações
@@ -128,15 +129,12 @@ int main(){
         int index1 = find_city_index(&graph, city1);
         int index2 = find_city_index(&graph, city2);
 
-        if (index1 != NOT_FOUND_city || index2 != NOT_FOUND_city){
+        if (index1 != NOT_FOUND_city && index2 != NOT_FOUND_city){
             add_edge(&graph, index1, index2, distance);
         }
         else printf("Cidades não devidamente adicionadas");        
     }
     
-
-    init_graph(&graph, num_cities);
-
     print_graph(&graph);
 
 
