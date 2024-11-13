@@ -166,6 +166,11 @@ void dijkstra(Graph *graph, int source_city, int dist[]) {
 
         // Percorre todas as arestas partindo de lower_distance
         while (current_edge != NULL) {
+
+
+            printf("aresta de peso %d atual indo para: %d", current_edge->weight, current_edge->destination);
+
+
             // Armazena o índice da cidade adjacente conectada diretamente a lower_distance por meio da aresta current_edge
             int dest_city = current_edge->destination;
 
@@ -201,10 +206,19 @@ void find_best_centers(Graph *graph) {
         //Garante não repetição de combiação enntre cidades
         for (int j = i + 1; j < graph->num_cities; j++) {
 
+        
+            printf("Comparando pares: %d %d", i, j);
+
+
         //Calcular Distâncias para Cada Par de Cidades:
             int dist_from_i[MAX_CITIES], dist_from_j[MAX_CITIES];
             dijkstra(graph, i, dist_from_i);
             dijkstra(graph, j, dist_from_j);
+
+            for(int x = 0; x<MAX_CITIES; x++){
+                printf("dist até i: %d\n", dist_from_i[x]);
+                printf("dist até i: %d\n", dist_from_j[x]);
+            }
 
 
         // Calcular a Maior Distância de Atendimento para o Par de Cidades (i, j):
@@ -231,6 +245,7 @@ void find_best_centers(Graph *graph) {
             if (max_distance < min_max_distance ||
                 (max_distance == min_max_distance && population_sum > max_population_sum)) {
                 min_max_distance = max_distance;
+                max_population_sum = population_sum;
                 best_city1 = i;
                 best_city2 = j;
             }
