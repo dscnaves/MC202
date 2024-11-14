@@ -1,12 +1,26 @@
+# Nome do executável
+EXEC = corretor
+
+# Compilador
+CC = gcc
+
+# Flags de compilação
 CFLAGS = -std=c99 -Wall -Werror -Wvla -g
 LDFLAGS = -lm
 
+# Arquivos de origem e de cabeçalho
+SRC = corretor.c implementacao_tad.c
+HEADERS = interface_tad.h
+
+# Indica que 'all' e 'clean' não são arquivos
 .PHONY: all clean
 
-all: corretor
+# Regra padrão para compilar o programa
+all: $(EXEC)
 
-corretor: corretor.c
-	gcc $(CFLAGS) corretor.c -o corretor $(LDFLAGS)
+$(EXEC): $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) $(SRC) -o $(EXEC) $(LDFLAGS)
 
+# Limpeza dos arquivos gerados
 clean:
-	rm -f corretor
+	rm -f $(EXEC) *.o
