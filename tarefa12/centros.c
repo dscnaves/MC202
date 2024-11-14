@@ -87,7 +87,7 @@ void print_graph(Graph *graph) {
 }
 
 // Adiciona uma conexão (aresta) entre duas cidades (nós) no grafo
-void add_edge(Graph * graph, int source_city, int destination_city, int weight_egde) {
+void add_edge(Graph * graph, int source_city, int destination_city, int weight_edge) {
     //Criando ligação de A->B:
     Edge * newEdge = (Edge *)malloc(sizeof(Edge));
     if (newEdge == NULL){
@@ -96,13 +96,14 @@ void add_edge(Graph * graph, int source_city, int destination_city, int weight_e
     }
     
     newEdge->destination = destination_city;
-    newEdge->weight = weight_egde;
+    newEdge->weight = weight_edge;
 
     /*Define o ponteiro next da nova Edge para apontar para a cabeça atual da lista de adjacências de source (graph->adj_lists[source].head)*/
     newEdge->next = graph->adj_lists[source_city].head;
 
     /*Atualiza graph->adj_lists[source].head para apontar para a nova Edge, tornando-a a nova cabeça da lista*/
     graph->adj_lists[source_city].head = newEdge;
+
 
     //Criando ligação bidirecional de B->A:
     newEdge = (Edge *)malloc(sizeof(Edge));
@@ -111,7 +112,7 @@ void add_edge(Graph * graph, int source_city, int destination_city, int weight_e
         exit(1);
     }
     newEdge->destination = source_city;
-    newEdge->weight = weight_egde;    
+    newEdge->weight = weight_edge;    
     newEdge->next = graph->adj_lists[destination_city].head;
     graph->adj_lists[destination_city].head = newEdge;
 }
@@ -242,6 +243,26 @@ void find_best_centers(Graph *graph) {
     printf("Distancia de atendimento: %d\n", min_max_distance);
 }
 
+void free_graph(Graph *graph) {
+    // Libera todas as arestas:
+    //Para cada lista de adjacência
+    for (int i = 0; i < graph->num_cities; i++) {
+        //Inicializa a variável current para começar liberando pelo início da lista de adj
+        Edge *current = graph->adj_lists[i].head;
+        //Para cada aresta
+        while (current != NULL) {
+            Edge *temp = current;
+            current = current->next;
+            //Libera a aresta
+            free(temp);
+        }
+    }
+
+    // Libera arrays de cidades e listas de adjacências
+    free(graph->cities);
+    free(graph->adj_lists);
+}
+
 int main(){
     int num_cities, num_routes;
     scanf("%d", &num_cities);
@@ -268,7 +289,7 @@ int main(){
         if (index1 != NOT_FOUND_city && index2 != NOT_FOUND_city){
             add_edge(&graph, index1, index2, distance);
         }
-        else printf("Cidades não devidamente adicionadas");        
+        else printf("Cidades não devidamente adicionadas\n");        
     }
 
     // Encontra e imprime os melhores centros de distribuição
