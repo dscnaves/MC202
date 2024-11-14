@@ -295,5 +295,8 @@ int main(){
     // Encontra e imprime os melhores centros de distribuição
     find_best_centers(&graph);
 
+    //Liberar memória
+    free_graph(&graph);
+
     return 0;
 }
