@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h> // Inclui INT_MAX
 
-#define NOT_FOUND_city -1
+#define NOT_FOUND_CITY -1
 #define INF INT_MAX
 #define MAX_CITIES 100
 
@@ -37,12 +37,13 @@ typedef struct AdjList {
 typedef struct {
     // Número de cidades
     int num_cities;
-    // #Array contendo cidades
+    // Array contendo cidades
     City * cities;
-    // #Array contenco as listas de adjacências para armazenar as conexões de cada cidade
+    // Array contenco as listas de adjacências para armazenar as conexões de cada cidade
     AdjList * adj_lists;
 } Graph;
 
+// Inicializa o grafo
 void init_graph(Graph * graph, int num_cities) {
     graph->num_cities = num_cities;
 
@@ -125,7 +126,7 @@ int find_city_index(Graph * graph, char * name) {
         }
     }
     //Se não encontrar a cidade, retorna -1
-    return NOT_FOUND_city;
+    return NOT_FOUND_CITY;
 }
 
 //Calcular a menor distância de uma cidade de origem a todas as outras no grafo
@@ -193,7 +194,7 @@ void find_best_centers(Graph *graph) {
     //Índices das cidades escolhidas para os centros de distribuição
     int best_city1 = -1, best_city2 = -1;
     //Menor "maior distância de atendimento" entre todas as cidades e o centro mais próximo
-    int min_max_distance = MAX_CITIES;
+    int min_max_distance = INF;
     int max_population_sum = 0;
 
     //Laço para Testar Pares de Cidades
@@ -243,6 +244,7 @@ void find_best_centers(Graph *graph) {
     printf("Distancia de atendimento: %d\n", min_max_distance);
 }
 
+// Libera a memória alocada para o grafo
 void free_graph(Graph *graph) {
     // Libera todas as arestas:
     //Para cada lista de adjacência
@@ -286,7 +288,7 @@ int main(){
         int index1 = find_city_index(&graph, city1);
         int index2 = find_city_index(&graph, city2);
 
-        if (index1 != NOT_FOUND_city && index2 != NOT_FOUND_city){
+        if (index1 != NOT_FOUND_CITY && index2 != NOT_FOUND_CITY){
             add_edge(&graph, index1, index2, distance);
         }
         else printf("Cidades não devidamente adicionadas\n");        
