@@ -93,18 +93,69 @@ void dfsCycleDetection_iterative(Graph *graph, int start_vertex, int *inCycle) {
                 } else if (i != parent[current]) {  // Ciclo detectado
                     inCycle[current] = 1;
                     inCycle[i] = 1;
-                    int cycle_vertex = parent[current];
-                    while (cycle_vertex != -1 && inCycle[cycle_vertex] == 0) {
-                        inCycle[cycle_vertex] = 1;
-                        cycle_vertex = parent[cycle_vertex];
+
+                    //Marcar meio do vertíces pertences ao ciclo
+                    int current_vertex = pai[vertex];
+                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                    while(inCycle[current_vertex] != 1 && current_vertex != i){                       
+                        inCycle[current_vertex] = 1;
+                        current_vertex = pai[current_vertex];
+                    }                    
+                }
+                //Caso onde há ciclos imendados
+                else if (inCycle[vertex] != 1 && inCycle[i] == 1) {
+                    //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                    inCycle[vertex] = 1;
+                    
+                    //Marcar meio do vertíces pertences ao ciclo
+                    int current_vertex = pai[vertex];
+                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                    while(inCycle[current_vertex] != 1 && current_vertex != i){                       
+                        inCycle[current_vertex] = 1;
+                        current_vertex = pai[current_vertex];
                     }
                 }
+                else if (inCycle[vertex] == 1 && inCycle[i] != 1) {
+                    //Marca tanto o vértice vertex quanto o vértice i como parte de um ciclo
+                    inCycle[i] = 1;
+                    
+                    //Marcar meio do vertíces pertences ao ciclo
+                    int current_vertex = pai[vertex];
+                    //Se chegamos ao inicio do ciclo ou se chegamos a um nó sem pai => break
+                    while(inCycle[current_vertex] != 1 && current_vertex != i){                       
+                        inCycle[current_vertex] = 1;
+                        current_vertex = pai[current_vertex];
+                    }
+                }                    
             }
         }
     }
 }
 
-// Classifica as lâmpadas com base nas distâncias e nos ciclos
+// Segunda busca em profundidade para atualizar o estado dos vértices no ciclo
+void dfsUpdateCycleStatus(Graph *graph, int vertex, int *inCycle, int *pai, int *sequencia_acessos_profundidade) {
+    for (int x = 0; x < graph->num_vertices; x++) {
+        int current_vertex = sequencia_acessos_profundidade[x];
+
+        // Verifica se chegamos ao final da sequência de acessos
+        if (current_vertex == -1) {
+            break;
+        }
+
+        // Verifica se o pai do vértice atual está em um ciclo e o próprio vértice ainda não faz parte de um ciclo ou não está marcado
+        if (pai[current_vertex] != -1 && inCycle[pai[current_vertex]] == 1 && inCycle[current_vertex] == 0) {
+            // Marca o vértice atual como "Apagado" (valor 2)
+            inCycle[current_vertex] = 2;
+        }
+        else if (pai[current_vertex] != -1 && inCycle[pai[current_vertex]] == 2 && inCycle[current_vertex] == 0){
+            inCycle[current_vertex] = 2;
+        }
+    }
+}
+
+
+
+// Função para classificar as lâmpadas com base nas distâncias e ciclos
 void classifyLamps(Graph *graph, int source) {
     int distances[MAX_VERTEX];
     int inCycle[MAX_VERTEX] = {0};
