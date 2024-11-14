@@ -1,6 +1,9 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "string.h": "c",
+        "stdio.h": "c",
+        "graph_list_adj.h": "c"
     }
 }
