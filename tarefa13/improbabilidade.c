@@ -26,8 +26,6 @@ int calculo_improbabilidade(Circuito * circuitos, int circ_num, int alavancas_to
         for(int y = 0; y<alavancas_total; y++){
             if(circuitos[x].condicoes[y] == configuracao[y]){
                 ligada = 1;
-            }else{
-                ligada = 0;
                 break;
             }
         }
@@ -87,11 +85,11 @@ int main(){
         }
     }
 
-    imprime_circuitos(circuitos,circ_num,alavancas_total);  
 
-    int * configuracao_teste = {-1,-1,+1,+1};
+    int configuracao_teste[] = {-1,-1,+1,-1};
     int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
 
+    printf("Improbabilidade: %d\n", imp);
     return 0;
 
 }
