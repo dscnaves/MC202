@@ -45,8 +45,8 @@ void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int a
             for(int x = 0; x<alavancas_total; x++){
                 melhor_configuracao[x] = configuracao[x];
             }
-            return;
         }
+        return;
     }
 
     //Se a configuração ainda não foi totalmente preenchida => Preenchemos a posição que estamos
@@ -102,15 +102,20 @@ int main(){
 
     backtracking(circuitos,circ_num,alavancas_total, 0, configuracao, &melhor_improbabilidade, melhor_configuracao);
 
+    printf("%d\n", melhor_improbabilidade);
     for(int i = 0; i<alavancas_total; i++){
-        printf("%d ",melhor_configuracao[i]);
+        if(melhor_configuracao[i] == +1){
+            printf("+%d ", i);
+        }else{
+            printf("-%d ", i);
+        }
     }
     printf("\n");
 
-    int configuracao_teste[] = {-1,-1,+1,-1};
-    int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
+    // int configuracao_teste[] = {-1,-1,+1,-1};
+    // int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
 
-    printf("Improbabilidade: %d\n", imp);
+    //printf("teste: %d\n", imp);
     return 0;
 
 }
