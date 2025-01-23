@@ -41,7 +41,7 @@ void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int a
     if(atual_alavanca == alavancas_total){
         int improbabilidade = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao);
         if(improbabilidade > *melhor_improbabilidade){
-            *melhor_configuracao = improbabilidade;
+            *melhor_improbabilidade = improbabilidade;
             for(int x = 0; x<alavancas_total; x++){
                 melhor_configuracao[x] = configuracao[x];
             }
@@ -53,10 +53,10 @@ void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int a
     
     //Preenchendo com alavanca para cima
     configuracao[atual_alavanca] = +1;
-    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, &configuracao, &melhor_improbabilidade, &melhor_configuracao); 
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, configuracao, melhor_improbabilidade, melhor_configuracao); 
     //Preenchendo com alavanca para baixo
     configuracao[atual_alavanca] = -1;
-    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, &configuracao, &melhor_improbabilidade, &melhor_configuracao); 
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, configuracao, melhor_improbabilidade, melhor_configuracao); 
 }
 
 int main(){
@@ -64,16 +64,16 @@ int main(){
 
     scanf("%d %d", &circ_num, &alavancas_total);
 
-    // int * configuracao;
-    // configuracao = malloc(alavancas_total*sizeof(int));
+    int * configuracao;
+    configuracao = malloc(alavancas_total*sizeof(int));
 
     Circuito * circuitos;
     circuitos =  malloc(circ_num*sizeof(Circuito));
 
 
-    // int melhor_improbabilidade = 0; // Maior improbabilidade encontrada
-    // int * melhor_configuracao;   // Configuração correspondente
-    // melhor_configuracao = malloc(alavancas_total*sizeof(int));
+    int melhor_improbabilidade = 0; // Maior improbabilidade encontrada
+    int * melhor_configuracao;   // Configuração correspondente
+    melhor_configuracao = malloc(alavancas_total*sizeof(int));
     
     for(int i = 0; i<circ_num; i++){
 
@@ -100,6 +100,12 @@ int main(){
         }
     }
 
+    backtracking(circuitos,circ_num,alavancas_total, 0, configuracao, &melhor_improbabilidade, melhor_configuracao);
+
+    for(int i = 0; i<alavancas_total; i++){
+        printf("%d ",melhor_configuracao[i]);
+    }
+    printf("\n");
 
     int configuracao_teste[] = {-1,-1,+1,-1};
     int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
