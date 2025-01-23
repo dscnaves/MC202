@@ -33,6 +33,17 @@ int calculo_improbabilidade(Circuito * circuitos, int circ_num, int alavancas_to
             improbabilidade += circuitos[x].peso;
         }
     }
+    // printf("Configuração:");
+    // for(int i = 0; i<alavancas_total; i++){
+    //     if(configuracao[i] == +1){
+    //         printf("+%d ", i);
+    //     }else{
+    //         printf("-%d ", i);
+    //     }
+    // }
+    // printf("\n");
+    // printf("Improbabilidade %d\n",improbabilidade);
+
     return improbabilidade;
 }
 
@@ -59,6 +70,15 @@ void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int a
     backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, configuracao, melhor_improbabilidade, melhor_configuracao); 
 }
 
+void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao, int *configuracao) {
+    for (int i = 0; i < circ_num; i++) {
+        free(circuitos[i].condicoes); // Libera a memória das condições de cada circuito
+    }
+    free(circuitos); // Libera a memória do array de circuitos
+    free(melhor_configuracao); // Libera a memória da melhor configuração
+    free(configuracao); // Libera a memória da configuração
+}
+
 int main(){
     int circ_num, alavancas_total, peso, alavancas_conectadas;
 
@@ -66,14 +86,14 @@ int main(){
 
     int * configuracao;
     configuracao = malloc(alavancas_total*sizeof(int));
+    memset(configuracao, 0, alavancas_total * sizeof(int));
 
-    Circuito * circuitos;
-    circuitos =  malloc(circ_num*sizeof(Circuito));
+    Circuito * circuitos =  malloc(circ_num*sizeof(Circuito));
 
 
     int melhor_improbabilidade = 0; // Maior improbabilidade encontrada
-    int * melhor_configuracao;   // Configuração correspondente
-    melhor_configuracao = malloc(alavancas_total*sizeof(int));
+    int * melhor_configuracao = malloc(alavancas_total*sizeof(int));   // Configuração correspondente
+    memset(melhor_configuracao, 0, alavancas_total * sizeof(int));
     
     for(int i = 0; i<circ_num; i++){
 
@@ -87,6 +107,7 @@ int main(){
         for(int j = 0; j<alavancas_total; j++){
             circuitos[i].condicoes[j] = 0;
         }
+        
 
         for (int j = 0; j<alavancas_conectadas; j++){
             int alavanca_atual;
@@ -111,6 +132,8 @@ int main(){
         }
     }
     printf("\n");
+
+    libera_memoria(circuitos,circ_num,melhor_configuracao,configuracao);
 
     // int configuracao_teste[] = {-1,-1,+1,-1};
     // int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
