@@ -11,12 +11,39 @@ typedef struct Circuito{
 
 void imprime_circuitos(Circuito * circuitos, int circ_num, int alavancas_total){
     for (int x = 0; x<circ_num; x++){
-        printf("Circuito %d Peso %d Alavancas Coectadas %d Configuração: ", x, circuitos[x].peso, circuitos[x].alavancas);
+        printf("Circuito %d Peso %d Alavancas Conectadas %d Configuração: ", x, circuitos[x].peso, circuitos[x].alavancas);
         for (int y = 0; y<alavancas_total; y++){
             printf("%d ", circuitos[x].condicoes[y]);
         }
         printf("\n");
     }
+}
+
+int calculo_improbabilidade(Circuito * circuitos, int circ_num, int alavancas_total, int *configuracao){
+    int improbabilidade = 0;
+    for(int x = 0; x<circ_num; x++){
+        int ligada = 0;
+        for(int y = 0; y<alavancas_total; y++){
+            if(circuitos[x].condicoes[y] == configuracao[y]){
+                ligada = 1;
+            }else{
+                ligada = 0;
+                break;
+            }
+        }
+        if(ligada == 1){
+            improbabilidade += circuitos[x].peso;
+        }
+    }
+    return improbabilidade;
+}
+
+void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *melhor_improbabilidade, int *melhor_configuracao){
+    //Caso base: Todas as alavancas já foram visitadas => Já formamos uma sequência completa => Cálculo da probabilidade
+    if(atual_alavanca == alavancas_total){
+
+    }
+
 }
 
 int main(){
@@ -60,7 +87,10 @@ int main(){
         }
     }
 
-    imprime_circuitos(circuitos,circ_num,alavancas_total);    
+    imprime_circuitos(circuitos,circ_num,alavancas_total);  
+
+    int * configuracao_teste = {-1,-1,+1,+1};
+    int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
 
     return 0;
 
