@@ -36,12 +36,27 @@ int calculo_improbabilidade(Circuito * circuitos, int circ_num, int alavancas_to
     return improbabilidade;
 }
 
-void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *melhor_improbabilidade, int *melhor_configuracao){
+void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *configuracao, int *melhor_improbabilidade, int *melhor_configuracao){
     //Caso base: Todas as alavancas já foram visitadas => Já formamos uma sequência completa => Cálculo da probabilidade
     if(atual_alavanca == alavancas_total){
-
+        int improbabilidade = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao);
+        if(improbabilidade > *melhor_improbabilidade){
+            *melhor_configuracao = improbabilidade;
+            for(int x = 0; x<alavancas_total; x++){
+                melhor_configuracao[x] = configuracao[x];
+            }
+            return;
+        }
     }
 
+    //Se a configuração ainda não foi totalmente preenchida => Preenchemos a posição que estamos
+    
+    //Preenchendo com alavanca para cima
+    configuracao[atual_alavanca] = +1;
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, &configuracao, &melhor_improbabilidade, &melhor_configuracao); 
+    //Preenchendo com alavanca para baixo
+    configuracao[atual_alavanca] = -1;
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca+1, &configuracao, &melhor_improbabilidade, &melhor_configuracao); 
 }
 
 int main(){
