@@ -19,53 +19,57 @@ void imprime_circuitos(Circuito * circuitos, int circ_num, int alavancas_total){
     }
 }
 
-int calculo_improbabilidade(Circuito * circuitos, int circ_num, int alavancas_total, int *configuracao){
+// Função para calcular a soma dos pesos de todos os circuitos
+int calcular_peso_total(Circuito *circuitos, int circ_num) {
+    int total = 0;
+    for (int i = 0; i < circ_num; i++) {
+        total += circuitos[i].peso; // Soma o peso de cada circuito
+    }
+    return total;
+}
+
+// Função para calcular a improbabilidade
+int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_total, int *configuracao) {
     int improbabilidade = 0;
-    for(int x = 0; x<circ_num; x++){
-        for(int y = 0; y<alavancas_total; y++){
-            if(circuitos[x].condicoes[y] == configuracao[y]){
+    for (int x = 0; x < circ_num; x++) {
+        for (int y = 0; y < alavancas_total; y++) {
+            if (circuitos[x].condicoes[y] == configuracao[y]) {
                 improbabilidade += circuitos[x].peso;
                 break;
             }
         }
     }
-    // printf("Configuração:");
-    // for(int i = 0; i<alavancas_total; i++){
-    //     if(configuracao[i] == +1){
-    //         printf("+%d ", i);
-    //     }else{
-    //         printf("-%d ", i);
-    //     }
-    // }
-    // printf("\n");
-    // printf("Improbabilidade %d\n",improbabilidade);
-
     return improbabilidade;
 }
 
-void backtracking(Circuito * circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *configuracao, int *melhor_improbabilidade, int *melhor_configuracao, int minimo_improbabilidade){
-    // Caso base: Todas as alavancas já foram visitadas => Já formamos uma sequência completa => Cálculo da probabilidade
-    if(atual_alavanca == alavancas_total){
+void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca,
+                  int *configuracao, int *melhor_improbabilidade, int *melhor_configuracao, int limite_improbabilidade) {
+    
+    // Caso base: Todas as alavancas já foram visitadas
+    if(atual_alavanca == alavancas_total) {
         int improbabilidade = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
-        if (improbabilidade > minimo_improbabilidade){
-            if(improbabilidade > *melhor_improbabilidade){
-                *melhor_improbabilidade = improbabilidade;
-                for(int x = 0; x < alavancas_total; x++){
-                    melhor_configuracao[x] = configuracao[x];
-                }
+        if (improbabilidade > *melhor_improbabilidade) {
+            *melhor_improbabilidade = improbabilidade;
+            for (int x = 0; x < alavancas_total; x++) {
+                melhor_configuracao[x] = configuracao[x];
             }
         }
         return;
     }
 
-    // Se a configuração ainda não foi totalmente preenchida => Preenchemos a posição que estamos
     // Preenchendo com alavanca para cima
     configuracao[atual_alavanca] = +1;
-    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, minimo_improbabilidade);
-    
+    int improbabilidade_cima = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
+    if (improbabilidade_cima > limite_improbabilidade) {
+        backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, limite_improbabilidade);
+    }
+
     // Preenchendo com alavanca para baixo
     configuracao[atual_alavanca] = -1;
-    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, minimo_improbabilidade);
+    int improbabilidade_baixo = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
+    if (improbabilidade_baixo > limite_improbabilidade) {
+        backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, limite_improbabilidade);
+    }
 }
 
 void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao, int *configuracao) {
@@ -77,83 +81,58 @@ void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao,
     free(configuracao); // Libera a memória da configuração
 }
 
-int main(){
-    int circ_num, alavancas_total, peso, alavancas_conectadas;
+int main() {
+    int circ_num, alavancas_total;
 
+    // Leitura do número de circuitos e alavancas
     scanf("%d %d", &circ_num, &alavancas_total);
 
-    int * configuracao;
-    configuracao = malloc(alavancas_total*sizeof(int));
-
-
-    Circuito * circuitos =  malloc(circ_num*sizeof(Circuito));
-
-
+    // Alocação de memória para a configuração e para os circuitos
+    int *configuracao = malloc(alavancas_total * sizeof(int));
+    Circuito *circuitos = malloc(circ_num * sizeof(Circuito));
     int melhor_improbabilidade = 0; // Maior improbabilidade encontrada
-    int * melhor_configuracao = malloc(alavancas_total*sizeof(int));   // Configuração correspondente
-    
+    int *melhor_configuracao = malloc(alavancas_total * sizeof(int)); // Configuração correspondente
 
-    for(int i = 0; i<circ_num; i++){
-
+    // Leitura da descrição de cada circuito
+    for (int i = 0; i < circ_num; i++) {
         char sinal;
+        int peso, alavancas_conectadas;
+        
+        // Leitura do peso e do número de alavancas conectadas
         scanf("%d %d", &peso, &alavancas_conectadas);
         circuitos[i].peso = peso;
         circuitos[i].alavancas = alavancas_conectadas;
-        circuitos[i].condicoes = malloc(alavancas_total*sizeof(int));
+        circuitos[i].condicoes = malloc(alavancas_total * sizeof(int));
 
-        //Inicializando o circuito
-        for(int j = 0; j<alavancas_total; j++){
+        // Inicializando as condições como 0
+        for (int j = 0; j < alavancas_total; j++) {
             circuitos[i].condicoes[j] = 0;
         }
-        
 
-        for (int j = 0; j<alavancas_conectadas; j++){
+        // Leitura das condições das alavancas
+        for (int j = 0; j < alavancas_conectadas; j++) {
             int alavanca_atual;
             scanf(" %c%d", &sinal, &alavanca_atual);
-
-            if(sinal == '+'){
-                circuitos[i].condicoes[alavanca_atual] = +1;
-            } else{
-                circuitos[i].condicoes[alavanca_atual] = -1;
-            }
+            circuitos[i].condicoes[alavanca_atual] = (sinal == '+') ? +1 : -1;
         }
     }
 
-    // Alocação para as configurações de todas as alavancas para cima e para baixo
-    int *cima_configuracao = malloc(alavancas_total * sizeof(int));
-    int *baixo_configuracao = malloc(alavancas_total * sizeof(int));
-    
-    for(int i = 0; i < alavancas_total; i++){
-        cima_configuracao[i] = +1; // Configurando todas as alavancas para cima
-        baixo_configuracao[i] = -1; // Configurando todas as alavancas para baixo
-    }
+    // Calcula a improbabilidade inicial máxima (metade do peso total dos circuitos)
+    int limite = calcular_peso_total(circuitos, circ_num) / 2;
 
-    // Calcula a improbabilidade das configurações totalmente para cima e totalmente para baixo
-    int cima_improbabilidade = calculo_improbabilidade(circuitos, circ_num, alavancas_total, cima_configuracao);
-    int baixo_improbabilidade = calculo_improbabilidade(circuitos, circ_num, alavancas_total, baixo_configuracao);
+    // Chama a função de backtracking com poda
+    backtracking(circuitos, circ_num, alavancas_total, 0, configuracao, 
+                 &melhor_improbabilidade, melhor_configuracao, limite);
 
-    // Decide qual configuração inicial utilizar com base na maior improbabilidade
-    int minimo_improbabilidade = (cima_improbabilidade > baixo_improbabilidade) ? cima_improbabilidade : baixo_improbabilidade;
-
-    // Realiza o backtracking passando a melhor configuração como parâmetro
-    backtracking(circuitos, circ_num, alavancas_total, 0, configuracao, &melhor_improbabilidade, melhor_configuracao, minimo_improbabilidade);
-
+    // Imprime a melhor improbabilidade e a configuração correspondente
     printf("%d\n", melhor_improbabilidade);
-    for(int i = 0; i<alavancas_total; i++){
-        if(melhor_configuracao[i] == +1){
-            printf("+%d ", i);
-        }else{
-            printf("-%d ", i);
-        }
+    for (int i = 0; i < alavancas_total; i++) {
+        printf("%c%d ", (melhor_configuracao[i] == +1) ? '+' : '-', i);
     }
     printf("\n");
 
-    libera_memoria(circuitos,circ_num,melhor_configuracao,configuracao);
+    // Libera a memória alocada
+    libera_memoria(circuitos, circ_num, melhor_configuracao, configuracao);
 
-    // int configuracao_teste[] = {-1,-1,+1,-1};
-    // int imp = calculo_improbabilidade(circuitos,circ_num,alavancas_total,configuracao_teste);
-
-    //printf("teste: %d\n", imp);
     return 0;
-
 }
