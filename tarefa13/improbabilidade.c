@@ -42,7 +42,8 @@ int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_tot
             //Contador rastreia quantas alavancas relevantes para o circuito já foram consideradas
             alavancas_passadas[x] += 1; //Incremenda array que contabiliza quantas alavancas foram usadas
 
-
+        //Verificar se circuito já não foi ligado 
+        // => Se o circuito não foi contabilizado, verifica se o circuito está ligado 
         if (circuitos_usados[x] == 0 && configuracao[atual_alavanca] == circuitos[x].condicoes[atual_alavanca])
         {
             improbabilidade += circuitos[x].peso;
@@ -50,6 +51,25 @@ int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_tot
         }
     }
 
+    return improbabilidade;
+}
+
+// Função é responsável por estimar a improbabilidade máxima que pode ser alcançada a partir do estado atual do backtracking
+int calculo_improbabilidade_possivel(Circuito *circuitos, int circ_num, int alavancas_total, int *circuitos_usados, int *alavancas_passadas)
+{
+    int improbabilidade = 0;
+
+    for (int x = 0; x < circ_num; x++)
+    {
+        // O circuito ainda não foi usado
+        // & Se ainda existem alavancas relevantes para o circuito que não foram consideradas
+        if (circuitos_usados[x] == 0 && alavancas_passadas[x] < circuitos[x].alavancas)
+        //Ainda tem alavancas do circuito não ligadas que tem possibilidade de serem ativadas
+        {
+            //Se o circuito ainda pode ser ativado
+            improbabilidade += circuitos[x].peso;
+        }
+    }
 
     return improbabilidade;
 }
