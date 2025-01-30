@@ -29,18 +29,31 @@ int calcular_peso_total(Circuito *circuitos, int circ_num) {
 }
 
 // Função para calcular a improbabilidade
-int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_total, int *configuracao) {
-    int improbabilidade = 0;
-    for (int x = 0; x < circ_num; x++) {
-        for (int y = 0; y < alavancas_total; y++) {
-            if (circuitos[x].condicoes[y] == configuracao[y]) {
-                improbabilidade += circuitos[x].peso;
-                break;
-            }
+int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *configuracao, int *circuitos_usados, int *alavancas_passadas)
+{
+    int improbabilidade = 0; //Variável armazenará a contribuição total dos circuitos
+    
+    for (int x = 0; x < circ_num; x++){
+        //Verificar se no circuito que estamos analisando, a posição da atual alavanca afeta ou não o circuito
+        if (circuitos[x].condicoes[atual_alavanca] == 0)
+            //Se a alavanca não afeta, pule o looping para o próximo circuito
+            continue;
+        else
+            //Contador rastreia quantas alavancas relevantes para o circuito já foram consideradas
+            alavancas_passadas[x] += 1; //Incremenda array que contabiliza quantas alavancas foram usadas
+
+
+        if (circuitos_usados[x] == 0 && configuracao[atual_alavanca] == circuitos[x].condicoes[atual_alavanca])
+        {
+            improbabilidade += circuitos[x].peso;
+            circuitos_usados[x] = 1;
         }
     }
+
+
     return improbabilidade;
 }
+
 
 void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca,
                   int *configuracao, int *melhor_improbabilidade, int *melhor_configuracao, int limite_improbabilidade) {
@@ -48,6 +61,12 @@ void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int at
     // Caso base: Todas as alavancas já foram visitadas
     if(atual_alavanca == alavancas_total) {
         int improbabilidade = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
+        printf("Improbabilidade: %d\n", improbabilidade); // Pass the variable here
+        for (int k = 0;  k<alavancas_total; k++){
+        printf("%d ", configuracao[k]);
+        }
+    printf("\n");
+
         if (improbabilidade > *melhor_improbabilidade) {
             *melhor_improbabilidade = improbabilidade;
             for (int x = 0; x < alavancas_total; x++) {
