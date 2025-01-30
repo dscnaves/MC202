@@ -75,40 +75,67 @@ int calculo_improbabilidade_possivel(Circuito *circuitos, int circ_num, int alav
 }
 
 
-void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca,
-                  int *configuracao, int *melhor_improbabilidade, int *melhor_configuracao, int limite_improbabilidade) {
-    
-    // Caso base: Todas as alavancas já foram visitadas
-    if(atual_alavanca == alavancas_total) {
-        int improbabilidade = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
-        printf("Improbabilidade: %d\n", improbabilidade); // Pass the variable here
-        for (int k = 0;  k<alavancas_total; k++){
-        printf("%d ", configuracao[k]);
-        }
-    printf("\n");
+void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca, int improb_atual,
+                  int *configuracao, int *circuitos_usados, int *alavancas_passadas, int *melhor_improbabilidade, int *melhor_configuracao)
+{
 
-        if (improbabilidade > *melhor_improbabilidade) {
-            *melhor_improbabilidade = improbabilidade;
-            for (int x = 0; x < alavancas_total; x++) {
+
+    // Caso base: Todas as alavancas já foram visitadas
+    if (atual_alavanca == alavancas_total)
+    {
+        //Se a improbabilidade atual for maior que a melhor improbabilidade prevista
+        if (improb_atual > *melhor_improbabilidade)
+        {
+            *melhor_improbabilidade = improb_atual;
+            //Salva a configuração de maior improbabilidade
+            for (int x = 0; x < alavancas_total; x++)
+            {
                 melhor_configuracao[x] = configuracao[x];
             }
         }
         return;
     }
 
+    // Analisa se é possivel a partir do estado atual chegar a um estado melhor, se nao conseguir, para o backtracking
+    int improbabilidade_maxima_futuro = improb_atual + calculo_improbabilidade_possivel(circuitos, circ_num, alavancas_total, circuitos_usados, alavancas_passadas);
+    
+    //Se a maxima improbabilidade possível para dada configuração é menor que a melhor improbabilidade já encontrada
+    if (improbabilidade_maxima_futuro <= *melhor_improbabilidade)
+        //Parar backtracking, pois não faz sentido continuar preenchendo alavancas para cima e para baixo que não levaram a melhor improb
+        return;
+
+    //Arrays para salvar estado atual 
+    int *circuitos_usados_nivel = malloc(circ_num * sizeof(int));
+    int *alavancas_passadas_nivel = malloc(circ_num * sizeof(int));
+
+    for (int i = 0; i < circ_num; i++)
+    {
+        circuitos_usados_nivel[i] = circuitos_usados[i];
+        alavancas_passadas_nivel[i] = alavancas_passadas[i];
+    }
+
+
     // Preenchendo com alavanca para cima
     configuracao[atual_alavanca] = +1;
-    int improbabilidade_cima = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
-    if (improbabilidade_cima > limite_improbabilidade) {
-        backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, limite_improbabilidade);
+    int improbabilidade_cima = improb_atual + calculo_improbabilidade(circuitos, circ_num, alavancas_total, atual_alavanca, configuracao, circuitos_usados, alavancas_passadas);
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, improbabilidade_cima, configuracao, circuitos_usados, alavancas_passadas, melhor_improbabilidade, melhor_configuracao);
+
+
+    for (int i = 0; i < circ_num; i++)
+    {
+        circuitos_usados[i] = circuitos_usados_nivel[i];
+        alavancas_passadas[i] = alavancas_passadas_nivel[i];
     }
+
 
     // Preenchendo com alavanca para baixo
     configuracao[atual_alavanca] = -1;
-    int improbabilidade_baixo = calculo_improbabilidade(circuitos, circ_num, alavancas_total, configuracao);
-    if (improbabilidade_baixo > limite_improbabilidade) {
-        backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, configuracao, melhor_improbabilidade, melhor_configuracao, limite_improbabilidade);
-    }
+    int improbabilidade_baixo = improb_atual + calculo_improbabilidade(circuitos, circ_num, alavancas_total, atual_alavanca, configuracao, circuitos_usados, alavancas_passadas);
+    backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, improbabilidade_baixo, configuracao, circuitos_usados, alavancas_passadas, melhor_improbabilidade, melhor_configuracao);
+
+
+    free(circuitos_usados_nivel);
+    free(alavancas_passadas_nivel);
 }
 
 void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao, int *configuracao) {
