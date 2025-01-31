@@ -96,7 +96,9 @@ void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int at
         return;
     }
 
-    // Analisa se é possivel a partir do estado atual chegar a um estado melhor, se nao conseguir, para o backtracking
+    /* PODA: Evitando caminhos inúteis */
+
+    //Analisa se é possivel a partir do estado atual chegar a um estado melhor, se nao conseguir, para o backtracking
     int improbabilidade_maxima_futuro = improb_atual + calculo_improbabilidade_possivel(circuitos, circ_num, alavancas_total, circuitos_usados, alavancas_passadas);
     
     //Se a maxima improbabilidade possível para dada configuração é menor que a melhor improbabilidade já encontrada
@@ -104,12 +106,12 @@ void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int at
         //Parar backtracking, pois não faz sentido continuar preenchendo alavancas para cima e para baixo que não levaram a melhor improb
         return;
 
-    //Arrays para salvar estado atual 
+    //Arrays para salvar estado atual dos arrays circuitos_usados 
+    //e alacancas_passadas para ser possível restaurá-los após cada tentativa
     int *circuitos_usados_nivel = malloc(circ_num * sizeof(int));
+    //Para cada circuito, quantas alavancas relevantes já foram consideradas => Cada posição do vetor corresponde a um circuito específico.
     int *alavancas_passadas_nivel = malloc(circ_num * sizeof(int));
-
-    for (int i = 0; i < circ_num; i++)
-    {
+    for (int i = 0; i < circ_num; i++){
         circuitos_usados_nivel[i] = circuitos_usados[i];
         alavancas_passadas_nivel[i] = alavancas_passadas[i];
     }
@@ -118,11 +120,11 @@ void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int at
     // Preenchendo com alavanca para cima
     configuracao[atual_alavanca] = +1;
     int improbabilidade_cima = improb_atual + calculo_improbabilidade(circuitos, circ_num, alavancas_total, atual_alavanca, configuracao, circuitos_usados, alavancas_passadas);
+    //A função chama a si mesma recursivamente para explorar as configurações das próximas alavancas (atual_alavanca + 1)
     backtracking(circuitos, circ_num, alavancas_total, atual_alavanca + 1, improbabilidade_cima, configuracao, circuitos_usados, alavancas_passadas, melhor_improbabilidade, melhor_configuracao);
 
-
-    for (int i = 0; i < circ_num; i++)
-    {
+    //Restaurante ao nível "original"
+    for (int i = 0; i < circ_num; i++){
         circuitos_usados[i] = circuitos_usados_nivel[i];
         alavancas_passadas[i] = alavancas_passadas_nivel[i];
     }
@@ -150,55 +152,82 @@ void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao,
 int main() {
     int circ_num, alavancas_total;
 
+
     // Leitura do número de circuitos e alavancas
     scanf("%d %d", &circ_num, &alavancas_total);
+
 
     // Alocação de memória para a configuração e para os circuitos
     int *configuracao = malloc(alavancas_total * sizeof(int));
     Circuito *circuitos = malloc(circ_num * sizeof(Circuito));
-    int melhor_improbabilidade = 0; // Maior improbabilidade encontrada
+
+    //Mostra quais circuitos estao sendo usados naquela configuracao
+    int *circuitos_usados = malloc(circ_num * sizeof(int));
+
+    /*Guarda quantas alavancas ja passaram, entao 
+    se ja passaram 3 alavancas e o
+    circuito tem 3 alavancas, ele nao pode ser ativado mais, 
+    entao nao vai ser contabilizado como possivel */
+    int *alavancas_passadas = malloc(circ_num * sizeof(int));
+
+    int melhor_improbabilidade = 0;                                   // Maior improbabilidade encontrada
     int *melhor_configuracao = malloc(alavancas_total * sizeof(int)); // Configuração correspondente
 
-    // Leitura da descrição de cada circuito
-    for (int i = 0; i < circ_num; i++) {
+
+    //Leitura da descrição de cada circuito
+    for (int i = 0; i < circ_num; i++){
         char sinal;
         int peso, alavancas_conectadas;
-        
-        // Leitura do peso e do número de alavancas conectadas
+
+
+        //Leitura do peso e do número de alavancas conectadas
         scanf("%d %d", &peso, &alavancas_conectadas);
         circuitos[i].peso = peso;
         circuitos[i].alavancas = alavancas_conectadas;
         circuitos[i].condicoes = malloc(alavancas_total * sizeof(int));
 
+
         // Inicializando as condições como 0
-        for (int j = 0; j < alavancas_total; j++) {
+        for (int j = 0; j < alavancas_total; j++){
             circuitos[i].condicoes[j] = 0;
         }
 
+
         // Leitura das condições das alavancas
-        for (int j = 0; j < alavancas_conectadas; j++) {
+        for (int j = 0; j < alavancas_conectadas; j++)
+        {
             int alavanca_atual;
             scanf(" %c%d", &sinal, &alavanca_atual);
             circuitos[i].condicoes[alavanca_atual] = (sinal == '+') ? +1 : -1;
         }
     }
 
-    // Calcula a improbabilidade inicial máxima (metade do peso total dos circuitos)
-    int limite = calcular_peso_total(circuitos, circ_num) / 2;
+    //Inincialização com 0
+    for (int i = 0; i < alavancas_total; i++){
+        configuracao[i] = 0;
+        melhor_configuracao[i] = 0;
+    }
 
-    // Chama a função de backtracking com poda
-    backtracking(circuitos, circ_num, alavancas_total, 0, configuracao, 
-                 &melhor_improbabilidade, melhor_configuracao, limite);
+    //Inincialização com 0
+    for (int i = 0; i < circ_num; i++){
+        circuitos_usados[i] = 0;
+        alavancas_passadas[i] = 0;
+    }
+
+    //Chama a função de backtracking
+    backtracking(circuitos, circ_num, alavancas_total, 0, 0, configuracao, circuitos_usados, alavancas_passadas,
+                 &melhor_improbabilidade, melhor_configuracao);
+
 
     // Imprime a melhor improbabilidade e a configuração correspondente
     printf("%d\n", melhor_improbabilidade);
-    for (int i = 0; i < alavancas_total; i++) {
+    for (int i = 0; i < alavancas_total; i++){
         printf("%c%d ", (melhor_configuracao[i] == +1) ? '+' : '-', i);
     }
     printf("\n");
 
     // Libera a memória alocada
-    libera_memoria(circuitos, circ_num, melhor_configuracao, configuracao);
+    libera_memoria(circuitos, circ_num, melhor_configuracao, configuracao, alavancas_passadas, circuitos_usados);
 
     return 0;
 }
