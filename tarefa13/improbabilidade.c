@@ -155,84 +155,87 @@ void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao,
 }
 
 
-int main() {
-    int circ_num, alavancas_total;
+// Função para ler os dados de entrada
+void ler_dados_entrada(int *circ_num, int *alavancas_total, Circuito **circuitos) {
+    scanf("%d %d", circ_num, alavancas_total);
 
-
-    // Leitura do número de circuitos e alavancas
-    scanf("%d %d", &circ_num, &alavancas_total);
-
-
-    // Alocação de memória para a configuração e para os circuitos
-    int *configuracao = malloc(alavancas_total * sizeof(int));
-    Circuito *circuitos = malloc(circ_num * sizeof(Circuito));
-
-    //Mostra quais circuitos estao sendo usados naquela configuracao
-    int *circuitos_usados = malloc(circ_num * sizeof(int));
-
-    /*Guarda quantas alavancas ja passaram, entao 
-    se ja passaram 3 alavancas e o
-    circuito tem 3 alavancas, ele nao pode ser ativado mais, 
-    entao nao vai ser contabilizado como possivel */
-    int *alavancas_passadas = malloc(circ_num * sizeof(int));
-
-    int melhor_improbabilidade = 0;                                   // Maior improbabilidade encontrada
-    int *melhor_configuracao = malloc(alavancas_total * sizeof(int)); // Configuração correspondente
-
-
-    //Leitura da descrição de cada circuito
-    for (int i = 0; i < circ_num; i++){
+    *circuitos = malloc(*circ_num * sizeof(Circuito));
+    for (int i = 0; i < *circ_num; i++) {
         char sinal;
         int peso, alavancas_conectadas;
 
-
-        //Leitura do peso e do número de alavancas conectadas
+        // Leitura do peso e do número de alavancas conectadas
         scanf("%d %d", &peso, &alavancas_conectadas);
-        circuitos[i].peso = peso;
-        circuitos[i].alavancas = alavancas_conectadas;
-        circuitos[i].condicoes = malloc(alavancas_total * sizeof(int));
-
+        (*circuitos)[i].peso = peso;
+        (*circuitos)[i].alavancas = alavancas_conectadas;
+        (*circuitos)[i].condicoes = malloc(*alavancas_total * sizeof(int));
 
         // Inicializando as condições como 0
-        for (int j = 0; j < alavancas_total; j++){
-            circuitos[i].condicoes[j] = 0;
+        for (int j = 0; j < *alavancas_total; j++) {
+            (*circuitos)[i].condicoes[j] = 0;
         }
-
 
         // Leitura das condições das alavancas
-        for (int j = 0; j < alavancas_conectadas; j++)
-        {
+        for (int j = 0; j < alavancas_conectadas; j++) {
             int alavanca_atual;
             scanf(" %c%d", &sinal, &alavanca_atual);
-            circuitos[i].condicoes[alavanca_atual] = (sinal == '+') ? +1 : -1;
+            (*circuitos)[i].condicoes[alavanca_atual] = (sinal == '+') ? +1 : -1;
         }
     }
+}
 
-    //Inincialização com 0
-    for (int i = 0; i < alavancas_total; i++){
-        configuracao[i] = 0;
-        melhor_configuracao[i] = 0;
+// Função para inicializar as estruturas de dados
+void inicializar_estruturas(int alavancas_total, int circ_num, int **configuracao, int **melhor_configuracao, int **circuitos_usados, int **alavancas_passadas) {
+    *configuracao = malloc(alavancas_total * sizeof(int));
+    *melhor_configuracao = malloc(alavancas_total * sizeof(int));
+    *circuitos_usados = malloc(circ_num * sizeof(int));
+    *alavancas_passadas = malloc(circ_num * sizeof(int));
+
+    for (int i = 0; i < alavancas_total; i++) {
+        (*configuracao)[i] = 0;
+        (*melhor_configuracao)[i] = 0;
     }
 
-    //Inincialização com 0
-    for (int i = 0; i < circ_num; i++){
-        circuitos_usados[i] = 0;
-        alavancas_passadas[i] = 0;
+    for (int i = 0; i < circ_num; i++) {
+        (*circuitos_usados)[i] = 0;
+        (*alavancas_passadas)[i] = 0;
     }
+}
 
-    //Chama a função de backtracking
-    backtracking(circuitos, circ_num, alavancas_total, 0, 0, configuracao, circuitos_usados, alavancas_passadas,
-                 &melhor_improbabilidade, melhor_configuracao);
+// Função para executar o backtracking
+void executar_backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int *configuracao, int *circuitos_usados, int *alavancas_passadas, int *melhor_improbabilidade, int *melhor_configuracao) {
+    backtracking(circuitos, circ_num, alavancas_total, 0, 0, configuracao, circuitos_usados, alavancas_passadas, melhor_improbabilidade, melhor_configuracao);
+}
 
-
-    // Imprime a melhor improbabilidade e a configuração correspondente
+// Função para imprimir os resultados
+void imprimir_resultados(int melhor_improbabilidade, int *melhor_configuracao, int alavancas_total) {
     printf("%d\n", melhor_improbabilidade);
-    for (int i = 0; i < alavancas_total; i++){
+    for (int i = 0; i < alavancas_total; i++) {
         printf("%c%d ", (melhor_configuracao[i] == +1) ? '+' : '-', i);
     }
     printf("\n");
+}
 
-    // Libera a memória alocada
+// Função principal
+int main() {
+    int circ_num, alavancas_total;
+    Circuito *circuitos;
+    int *configuracao, *melhor_configuracao, *circuitos_usados, *alavancas_passadas;
+    int melhor_improbabilidade = 0;
+
+    // Leitura dos dados de entrada
+    ler_dados_entrada(&circ_num, &alavancas_total, &circuitos);
+
+    // Inicialização das estruturas de dados
+    inicializar_estruturas(alavancas_total, circ_num, &configuracao, &melhor_configuracao, &circuitos_usados, &alavancas_passadas);
+
+    // Execução do backtracking
+    backtracking(circuitos, circ_num, alavancas_total, 0, 0, configuracao, circuitos_usados, alavancas_passadas, &melhor_improbabilidade, melhor_configuracao);
+
+    // Impressão dos resultados
+    imprimir_resultados(melhor_improbabilidade, melhor_configuracao, alavancas_total);
+
+    // Liberação de memória
     libera_memoria(circuitos, circ_num, melhor_configuracao, configuracao, alavancas_passadas, circuitos_usados);
 
     return 0;
