@@ -1,24 +1,5 @@
 #include "improbabilidade.h"
 
-void imprime_circuitos(Circuito * circuitos, int circ_num, int alavancas_total){
-    for (int x = 0; x<circ_num; x++){
-        printf("Circuito %d Peso %d Alavancas Conectadas %d Configuração: ", x, circuitos[x].peso, circuitos[x].alavancas);
-        for (int y = 0; y<alavancas_total; y++){
-            printf("%d ", circuitos[x].condicoes[y]);
-        }
-        printf("\n");
-    }
-}
-
-// Função para calcular a soma dos pesos de todos os circuitos
-int calcular_peso_total(Circuito *circuitos, int circ_num) {
-    int total = 0;
-    for (int i = 0; i < circ_num; i++) {
-        total += circuitos[i].peso; // Soma o peso de cada circuito
-    }
-    return total;
-}
-
 // Função para calcular a improbabilidade
 int calculo_improbabilidade(Circuito *circuitos, int circ_num, int alavancas_total, int atual_alavanca, int *configuracao, int *circuitos_usados, int *alavancas_passadas)
 {
