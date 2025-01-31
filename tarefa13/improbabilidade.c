@@ -140,14 +140,20 @@ void backtracking(Circuito *circuitos, int circ_num, int alavancas_total, int at
     free(alavancas_passadas_nivel);
 }
 
-void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao, int *configuracao) {
-    for (int i = 0; i < circ_num; i++) {
+//Função para liberar memória
+void libera_memoria(Circuito *circuitos, int circ_num, int *melhor_configuracao, int *configuracao, int *alavancas_passadas, int *circuitos_usados)
+{
+    for (int i = 0; i < circ_num; i++){
         free(circuitos[i].condicoes); // Libera a memória das condições de cada circuito
     }
-    free(circuitos); // Libera a memória do array de circuitos
-    free(melhor_configuracao); // Libera a memória da melhor configuração
-    free(configuracao); // Libera a memória da configuração
+
+    free(circuitos);            // Libera a memória do array de circuitos
+    free(melhor_configuracao);  // Libera a memória da melhor configuração
+    free(configuracao);         // Libera a memória da configuração
+    free(circuitos_usados);     //Libera a memória dos circuitos usados
+    free(alavancas_passadas);   //Libera a memória do número de alavancas relevantes já passadas
 }
+
 
 int main() {
     int circ_num, alavancas_total;
